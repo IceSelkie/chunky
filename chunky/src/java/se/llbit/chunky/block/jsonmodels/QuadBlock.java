@@ -21,6 +21,7 @@ public class QuadBlock extends Block {
   private final Quad[] quads;
   private final Texture[] textures;
   private final boolean isEntity;
+  public boolean supportsOpacity = true; // some blocks only support full or zero opacity and round alpha values to 0 or 1
 
   public QuadBlock(String name, Texture texture, Quad[] quads, Texture[] textures,
       boolean isEntity) {
@@ -47,7 +48,7 @@ public class QuadBlock extends Block {
           continue;
         }
         float[] color = textures[i].getColor(ray.u, ray.v);
-        if (color[3] > .99f) {
+        if (supportsOpacity ? color[3] > Ray.EPSILON : color[3] > 0.5f) {
           if (quads[i] instanceof TintedQuad) {
             float[] biomeColor = ray.getBiomeGrassColor(scene);
             color[0] *= biomeColor[0];
@@ -63,7 +64,9 @@ public class QuadBlock extends Block {
     }
 
     if (hit) {
-      ray.color.w = 1;
+      if (!supportsOpacity) {
+        ray.color.w = 1;
+      }
       ray.distance += ray.t;
       ray.o.scaleAdd(ray.t, ray.d);
     }

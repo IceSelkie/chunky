@@ -471,7 +471,7 @@ public class ResourcepackBlockProvider implements BlockProvider {
           .equals("minecraft:block/tinted_cross") || parentName.equals("block/cross") || parentName
           .equals("minecraft:block/cross")) {
         block.supportsOpacity = false;
-      } else if(blockDefinition.isEmpty()) {
+      } else if (blockDefinition.isEmpty()) {
         return Air.INSTANCE;
       }
       try {
@@ -743,7 +743,7 @@ public class ResourcepackBlockProvider implements BlockProvider {
         JsonModelFace face = faces[faceIndex];
         if (face != null && face.quad != null && face.quad.intersect(ray)) {
           float[] color = face.getColor(ray, scene, model.textures.get(face.texture));
-          if (model.supportsOpacity ? color[3] > Ray.EPSILON : color[3] > .99f) {
+          if (model.supportsOpacity ? color[3] > Ray.EPSILON : color[3] > .5f) {
             ray.color.set(color);
             ray.n.set(face.quad.n);
             ray.t = ray.tNext;
@@ -795,6 +795,7 @@ public class ResourcepackBlockProvider implements BlockProvider {
       QuadBlock qb = new QuadBlock(name, this.textures.getOrDefault("up", Texture.unknown), quads,
           textures, isEntity());
       qb.opaque = opaque;
+      qb.supportsOpacity = supportsOpacity;
       return qb;
     }
 
@@ -992,6 +993,7 @@ public class ResourcepackBlockProvider implements BlockProvider {
           textures.toArray(
               new Texture[0]), isEntity());
       qb.opaque = opaque;
+      qb.supportsOpacity = Arrays.stream(parts).allMatch(p -> p.supportsOpacity);
       return qb;
     }
 
