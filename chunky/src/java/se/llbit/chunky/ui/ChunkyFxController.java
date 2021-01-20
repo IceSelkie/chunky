@@ -81,6 +81,7 @@ import se.llbit.chunky.world.Icon;
 import se.llbit.chunky.world.World;
 import se.llbit.chunky.world.listeners.ChunkUpdateListener;
 import se.llbit.fx.ToolPane;
+import se.llbit.fxutil.Dialogs;
 import se.llbit.fxutil.GroupedChangeListener;
 import se.llbit.log.Level;
 import se.llbit.log.Log;
@@ -133,6 +134,7 @@ public class ChunkyFxController
   @FXML private Tab aboutTab;
   @FXML private Button editResourcePacks;
   @FXML private CheckBox singleColorBtn;
+  @FXML private CheckBox disableDefaultTexturesBtn;
   @FXML private CheckBox showLauncherBtn;
   @FXML private Button openSceneDirBtn;
   @FXML private Button changeSceneDirBtn;
@@ -498,7 +500,7 @@ public class ChunkyFxController
 
     deleteChunks.setTooltip(new Tooltip("Delete selected chunks."));
     deleteChunks.setOnAction(e -> {
-      Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+      Alert alert = Dialogs.createAlert(Alert.AlertType.CONFIRMATION);
       alert.setTitle("Delete Selected Chunks");
       alert.setContentText(
           "Do you really want to delete the selected chunks? This can not be undone.");
@@ -575,6 +577,7 @@ public class ChunkyFxController
     editResourcePacks.setOnAction(e -> {
       ResourceLoadOrderEditor editor = new ResourceLoadOrderEditor(() -> {
         scene.refresh();
+        scene.rebuildBvh();
       });
       editor.show();
     });
@@ -594,6 +597,11 @@ public class ChunkyFxController
     singleColorBtn.setSelected(PersistentSettings.getSingleColorTextures());
     singleColorBtn.selectedProperty().addListener((observable, oldValue, newValue) -> {
       PersistentSettings.setSingleColorTextures(newValue);
+    });
+
+    disableDefaultTexturesBtn.setSelected(PersistentSettings.getDisableDefaultTextures());
+    disableDefaultTexturesBtn.selectedProperty().addListener((observable, oldValue, newValue) -> {
+      PersistentSettings.setDisableDefaultTextures(newValue);
     });
 
     trackPlayerBtn.selectedProperty().bindBidirectional(trackPlayer);
@@ -889,7 +897,7 @@ public class ChunkyFxController
     File oldFormat = new File(PersistentSettings.getSceneDirectory(), sceneName + Scene.EXTENSION);
     File newFormat = new File(PersistentSettings.getSceneDirectory(), sceneName);
     if (oldFormat.exists() || newFormat.exists()) {
-      Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+      Alert alert = Dialogs.createAlert(Alert.AlertType.CONFIRMATION);
       alert.setTitle("Overwrite existing scene");
       alert.setContentText("A scene with that name already exists. This will overwrite the existing scene, are you sure you want to continue?");
 

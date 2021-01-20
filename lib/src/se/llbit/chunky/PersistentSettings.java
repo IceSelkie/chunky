@@ -422,5 +422,34 @@ public final class PersistentSettings {
   public static String getOctreeImplementation() {
     return settings.getString("octreeImplementation", "PACKED");
   }
+
+  public static void setGridSizeDefault(int value) {
+    settings.setInt("gridSize", value);
+  }
+
+  public static int getGridSizeDefault() {
+    return settings.getInt("gridSize", 10);
+  }
+
+  public static void setPreventNormalEmitterWithSampling(boolean value) {
+    settings.setBool("preventNormalEmitterWithSampling", value);
+  }
+
+  public static boolean getPreventNormalEmitterWithSampling() {
+    return settings.getBool("preventNormalEmitterWithSampling", false);
+  }
+
+  /**
+   * Checks if Chunky should try to load the default textures from the latest Minecraft version it can find if they
+   * are not found in the selected resource packs.
+   * For deterministic renders (independent of installed Minecraft versions), this option should be enabled.
+   */
+  public static boolean getDisableDefaultTextures() {
+    return settings.getBool("disableDefaultTextures", false);
+  }
+
+  public static void setDisableDefaultTextures(boolean value) {
+    settings.setBool("disableDefaultTextures", value);
+  }
 }
 

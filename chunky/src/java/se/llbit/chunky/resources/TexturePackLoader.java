@@ -379,6 +379,7 @@ public class TexturePackLoader {
         new SimpleTexture("assets/minecraft/textures/blocks/beacon", Texture.beacon),
         new SimpleTexture("textures/blocks/beacon", Texture.beacon),
         new IndexedTexture(0x29, Texture.beacon)));
+    allTextures.put("beacon_beam", new SimpleTexture("assets/minecraft/textures/entity/beacon_beam", Texture.beaconBeam));
     allTextures.put("crafting_table_top", new AlternateTextures(
         new SimpleTexture("assets/minecraft/textures/block/crafting_table_top",
             Texture.workbenchTop),
@@ -2400,11 +2401,11 @@ public class TexturePackLoader {
 
     // Minecraft 1.9 blocks.
     allTextures.put("grass_path_side", new AlternateTextures(
-        new SimpleTexture("assets/minecraft/textures/block/grass_path_side",
-            Texture.grassPathSide),
-        new SimpleTexture("assets/minecraft/textures/blocks/grass_path_side",
-            Texture.grassPathSide)));
+        new SimpleTexture("assets/minecraft/textures/block/dirt_path_side", Texture.grassPathSide), // 20w45a
+        new SimpleTexture("assets/minecraft/textures/block/grass_path_side", Texture.grassPathSide),
+        new SimpleTexture("assets/minecraft/textures/blocks/grass_path_side", Texture.grassPathSide)));
     allTextures.put("grass_path_top", new AlternateTextures(
+        new SimpleTexture("assets/minecraft/textures/block/dirt_path_top", Texture.grassPathTop), // 20w45a
         new SimpleTexture("assets/minecraft/textures/block/grass_path_top", Texture.grassPathTop),
         new SimpleTexture("assets/minecraft/textures/blocks/grass_path_top", Texture.grassPathTop)));
     allTextures.put("end_bricks", new AlternateTextures(
@@ -3517,6 +3518,62 @@ public class TexturePackLoader {
     addSimpleTexture("assets/minecraft/textures/block/quartz_bricks", Texture.quartzBricks);
     addSimpleTexture("assets/minecraft/textures/block/chain", Texture.chain);
     addSimpleTexture("assets/minecraft/textures/block/jigsaw_lock", Texture.jigsawLock);
+
+    // Minecraft 1.17
+    addSimpleTexture("assets/minecraft/textures/block/candle", Texture.candle);
+    addSimpleTexture("assets/minecraft/textures/block/white_candle", Texture.whiteCandle);
+    addSimpleTexture("assets/minecraft/textures/block/orange_candle", Texture.orangeCandle);
+    addSimpleTexture("assets/minecraft/textures/block/magenta_candle", Texture.magentaCandle);
+    addSimpleTexture("assets/minecraft/textures/block/light_blue_candle", Texture.lightBlueCandle);
+    addSimpleTexture("assets/minecraft/textures/block/yellow_candle", Texture.yellowCandle);
+    addSimpleTexture("assets/minecraft/textures/block/lime_candle", Texture.limeCandle);
+    addSimpleTexture("assets/minecraft/textures/block/pink_candle", Texture.pinkCandle);
+    addSimpleTexture("assets/minecraft/textures/block/gray_candle", Texture.grayCandle);
+    addSimpleTexture("assets/minecraft/textures/block/light_gray_candle", Texture.lightGrayCandle);
+    addSimpleTexture("assets/minecraft/textures/block/cyan_candle", Texture.cyanCandle);
+    addSimpleTexture("assets/minecraft/textures/block/purple_candle", Texture.purpleCandle);
+    addSimpleTexture("assets/minecraft/textures/block/blue_candle", Texture.blueCandle);
+    addSimpleTexture("assets/minecraft/textures/block/brown_candle", Texture.brownCandle);
+    addSimpleTexture("assets/minecraft/textures/block/green_candle", Texture.greenCandle);
+    addSimpleTexture("assets/minecraft/textures/block/red_candle", Texture.redCandle);
+    addSimpleTexture("assets/minecraft/textures/block/black_candle", Texture.blackCandle);
+    addSimpleTexture("assets/minecraft/textures/particle/flame", Texture.flameParticle);
+    addSimpleTexture("assets/minecraft/textures/block/copper_ore", Texture.copperOre);
+    addSimpleTexture("assets/minecraft/textures/block/calcite", Texture.calcite);
+    addSimpleTexture("assets/minecraft/textures/block/tuff", Texture.tuff);
+    addSimpleTexture("assets/minecraft/textures/block/amethyst_block", Texture.amethyst);
+    addSimpleTexture("assets/minecraft/textures/block/budding_amethyst", Texture.buddingAmethyst);
+    addSimpleTexture("assets/minecraft/textures/block/copper_block", Texture.copperBlock);
+    addSimpleTexture("assets/minecraft/textures/block/lightly_weathered_copper_block", Texture.lightlyWeatheredCopperBlock);
+    addSimpleTexture("assets/minecraft/textures/block/semi_weathered_copper_block", Texture.semiWeatheredCopperBlock);
+    addSimpleTexture("assets/minecraft/textures/block/weathered_copper_block", Texture.weatheredCopperBlock);
+    addSimpleTexture("assets/minecraft/textures/block/cut_copper", Texture.cutCopperBlock);
+    addSimpleTexture("assets/minecraft/textures/block/lightly_weathered_cut_copper", Texture.lightlyWeatheredCutCopperBlock);
+    addSimpleTexture("assets/minecraft/textures/block/semi_weathered_cut_copper", Texture.semiWeatheredCutCopperBlock);
+    addSimpleTexture("assets/minecraft/textures/block/weathered_cut_copper", Texture.weatheredCutCopperBlock);
+    addSimpleTexture("assets/minecraft/textures/block/lightning_rod", Texture.lightningRod);
+    addSimpleTexture("assets/minecraft/textures/block/small_amethyst_bud", Texture.smallAmethystBud);
+    addSimpleTexture("assets/minecraft/textures/block/medium_amethyst_bud", Texture.mediumAmethystBud);
+    addSimpleTexture("assets/minecraft/textures/block/large_amethyst_bud", Texture.largeAmethystBud);
+    addSimpleTexture("assets/minecraft/textures/block/amethyst_cluster", Texture.amethystCluster);
+    addSimpleTexture("assets/minecraft/textures/block/tinted_glass", Texture.tintedGlass);
+    addSimpleTexture("assets/minecraft/textures/block/powder_snow", Texture.powderSnow);
+    addSimpleTexture("assets/minecraft/textures/block/dripstone_block", Texture.dripstoneBlock);
+    addSimpleTexture("assets/minecraft/textures/block/pointed_dripstone_down_base", Texture.pointedDripstoneDownBase);
+    addSimpleTexture("assets/minecraft/textures/block/pointed_dripstone_down_frustum", Texture.pointedDripstoneDownFrustum);
+    addSimpleTexture("assets/minecraft/textures/block/pointed_dripstone_down_middle", Texture.pointedDripstoneDownMiddle);
+    addSimpleTexture("assets/minecraft/textures/block/pointed_dripstone_down_tip", Texture.pointedDripstoneDownTip);
+    addSimpleTexture("assets/minecraft/textures/block/pointed_dripstone_down_tip_merge", Texture.pointedDripstoneDownTipMerge);
+    addSimpleTexture("assets/minecraft/textures/block/pointed_dripstone_up_base", Texture.pointedDripstoneUpBase);
+    addSimpleTexture("assets/minecraft/textures/block/pointed_dripstone_up_frustum", Texture.pointedDripstoneUpFrustum);
+    addSimpleTexture("assets/minecraft/textures/block/pointed_dripstone_up_middle", Texture.pointedDripstoneUpMiddle);
+    addSimpleTexture("assets/minecraft/textures/block/pointed_dripstone_up_tip", Texture.pointedDripstoneUpTip);
+    addSimpleTexture("assets/minecraft/textures/block/pointed_dripstone_up_tip_merge", Texture.pointedDripstoneUpTipMerge);
+    addSimpleTexture("assets/minecraft/textures/block/sculk_sensor_bottom", Texture.sculkSensorBottom);
+    addSimpleTexture("assets/minecraft/textures/block/sculk_sensor_side", Texture.sculkSensorSide);
+    addSimpleTexture("assets/minecraft/textures/block/sculk_sensor_tendril_active", Texture.sculkSensorTendrilActive);
+    addSimpleTexture("assets/minecraft/textures/block/sculk_sensor_tendril_inactive", Texture.sculkSensorTendrilInactive);
+    addSimpleTexture("assets/minecraft/textures/block/sculk_sensor_top", Texture.sculkSensorTop);
   }
 
   private static void addSimpleTexture(String file, Texture texture) {
@@ -3621,6 +3678,8 @@ public class TexturePackLoader {
    * last used texture pack.
    */
   public static void loadTexturePacks(@NotNull String[] texturePacks, boolean remember) {
+    TextureCache.reset();
+    TexturePackLoader.texturePacks = texturePacks;
     Set<Map.Entry<String, TextureLoader>> toLoad = allTextures.entrySet();
     for (String path : texturePacks) {
       if (!path.isEmpty()) {
@@ -3636,7 +3695,7 @@ public class TexturePackLoader {
         }
       }
     }
-    if (!toLoad.isEmpty()) {
+    if (!toLoad.isEmpty() && !PersistentSettings.getDisableDefaultTextures()) {
       // If there are textures left to load we try to load the default textures.
       File defaultResources = MinecraftFinder.getMinecraftJar();
       if (defaultResources != null) {
@@ -3760,7 +3819,7 @@ public class TexturePackLoader {
         }
       }
     }
-    if (!toLoad.isEmpty()) {
+    if (!toLoad.isEmpty() && !PersistentSettings.getDisableDefaultTextures()) {
       // If there are textures left to load we try to load the default textures.
       File defaultResources = MinecraftFinder.getMinecraftJar();
       if (defaultResources != null) {

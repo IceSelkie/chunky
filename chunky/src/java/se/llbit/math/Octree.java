@@ -42,6 +42,7 @@ public class Octree {
 
   public interface OctreeImplementation {
     void set(int type, int x, int y, int z);
+    @Deprecated
     void set(Node data, int x, int y, int z);
     Node get(int x, int y, int z);
     Material getMaterial(int x, int y, int z, BlockPalette palette);
@@ -52,6 +53,7 @@ public class Octree {
     boolean isBranch(NodeId node);
     NodeId getChild(NodeId parent, int childNo);
     int getType(NodeId node);
+    @Deprecated
     int getData(NodeId node);
     default void startFinalization() {}
     default void endFinalization() {}
@@ -202,6 +204,7 @@ public class Octree {
       }
     }
 
+    @Deprecated
     public int getData() {
       return 0;
     }
@@ -217,7 +220,9 @@ public class Octree {
 
   /**
    * An octree node with extra data.
+   * @deprecated Not used anymore, only kept for compatibility with plugins
    */
+  @Deprecated
   static public final class DataNode extends Node {
     final int data;
 
@@ -315,7 +320,7 @@ public class Octree {
   /**
    * @return The voxel type at the given coordinates
    */
-  public synchronized Node get(int x, int y, int z) {
+  public Node get(int x, int y, int z) {
     return implementation.get(x, y, z);
   }
 
@@ -482,7 +487,7 @@ public class Octree {
       Material prevBlock = ray.getCurrentMaterial();
 
       ray.setPrevMaterial(prevBlock, ray.getCurrentData());
-      ray.setCurrentMaterial(currentBlock, implementation.getData(node));
+      ray.setCurrentMaterial(currentBlock);
 
       if (currentBlock.localIntersect) {
         if (currentBlock.intersect(ray, scene)) {
@@ -493,12 +498,15 @@ public class Octree {
           continue;
         } else {
           // Exit ray from this local block.
-          ray.setCurrentMaterial(Air.INSTANCE, 0); // Current material is air.
+          ray.setCurrentMaterial(Air.INSTANCE); // Current material is air.
           ray.exitBlock(x, y, z);
           continue;
         }
       } else if (!currentBlock.isSameMaterial(prevBlock) && currentBlock != Air.INSTANCE) {
         TexturedBlockModel.getIntersectionColor(ray);
+        if (currentBlock.opaque) {
+          ray.color.w = 1;
+        }
         return true;
       }
 
@@ -596,25 +604,28 @@ public class Octree {
       Material prevBlock = ray.getCurrentMaterial();
 
       ray.setPrevMaterial(prevBlock, ray.getCurrentData());
-      ray.setCurrentMaterial(currentBlock, implementation.getData(node));
+      ray.setCurrentMaterial(currentBlock);
 
       if (!currentBlock.isWater()) {
         if (currentBlock.localIntersect) {
           if (!currentBlock.intersect(ray, scene)) {
-            ray.setCurrentMaterial(Air.INSTANCE, 0);
+            ray.setCurrentMaterial(Air.INSTANCE);
           }
           return true;
         } else if (currentBlock != Air.INSTANCE) {
           TexturedBlockModel.getIntersectionColor(ray);
+          if (currentBlock.opaque) {
+            ray.color.w = 1;
+          }
           return true;
         } else {
           return true;
         }
       }
 
-      if ((implementation.getData(node) & (1 << Water.FULL_BLOCK)) == 0) {
+      if (!(currentBlock instanceof Water && ((Water) currentBlock).isFullBlock())) {
         if (WaterModel.intersectTop(ray)) {
-          ray.setCurrentMaterial(Air.INSTANCE, 0);
+          ray.setCurrentMaterial(Air.INSTANCE);
           return true;
         } else {
           ray.exitBlock(x, y, z);

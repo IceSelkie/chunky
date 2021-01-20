@@ -3,6 +3,7 @@ package se.llbit.chunky.chunk;
 import se.llbit.chunky.block.*;
 import se.llbit.math.Octree;
 import se.llbit.nbt.CompoundTag;
+import se.llbit.nbt.IntTag;
 import se.llbit.nbt.StringTag;
 import se.llbit.nbt.Tag;
 
@@ -84,6 +85,48 @@ public class BlockPalette {
     if(id == ANY_ID)
       return stone;
     return palette.get(id);
+  }
+
+  /**
+   * Get the index for a water block with the given level and data. If it doesn't exist, it is
+   * created.
+   *
+   * @param level Water level
+   * @param data  Water data (for corner levels)
+   * @return Index of the water block in this palette
+   * @throws IllegalArgumentException If the level is out of range
+   */
+  public int getWaterId(int level, int data) {
+    if (level < 0 || level > 15) {
+      throw new IllegalArgumentException("Invalid water level " + level);
+    }
+    CompoundTag tag = new CompoundTag();
+    tag.add("Name", new StringTag("minecraft:water$chunky"));
+    tag.add("level", new IntTag(level));
+    tag.add("data", new IntTag(data));
+    BlockSpec spec = new BlockSpec(tag);
+    return put(spec);
+  }
+
+  /**
+   * Get the index for a lava block with the given level and data. If it doesn't exist, it is
+   * created.
+   *
+   * @param level Lava level
+   * @param data  Lava data (for corner levels)
+   * @return Index of the lava block in this palette
+   * @throws IllegalArgumentException If the level is out of range
+   */
+  public int getLavaId(int level, int data) {
+    if (level < 0 || level > 15) {
+      throw new IllegalArgumentException("Invalid lava level " + level);
+    }
+    CompoundTag tag = new CompoundTag();
+    tag.add("Name", new StringTag("minecraft:lava$chunky"));
+    tag.add("level", new IntTag(level));
+    tag.add("data", new IntTag(data));
+    BlockSpec spec = new BlockSpec(tag);
+    return put(spec);
   }
 
   /**
@@ -185,6 +228,9 @@ public class BlockPalette {
       block.specular = 0.04f;
     });
     materialProperties.put("minecraft:iron_block", block -> {
+      block.specular = 0.04f;
+    });
+    materialProperties.put("minecraft:iron_bars", block -> {
       block.specular = 0.04f;
     });
     materialProperties.put("minecraft:redstone_torch", block -> {
@@ -308,6 +354,60 @@ public class BlockPalette {
         if (charges > 0) {
           block.emittance = 1.0f / 15 * (charges * 4 - 2);
         }
+      }
+    });
+    Consumer<Block> copperConfig = block -> { block.specular = 0.04f; };
+    Consumer<Block> lightlyWeatheredCopperConfig = block -> { block.specular = 0.66f * 0.04f; };
+    Consumer<Block> semiWeatheredCopperConfig = block -> { block.specular = 0.33f * 0.04f; };
+    materialProperties.put("minecraft:copper_block", copperConfig);
+    materialProperties.put("minecraft:lightly_weathered_copper_block", lightlyWeatheredCopperConfig);
+    materialProperties.put("minecraft:semi_weathered_copper_block", semiWeatheredCopperConfig);
+    materialProperties.put("minecraft:cut_copper", copperConfig);
+    materialProperties.put("minecraft:lightly_weathered_cut_copper", lightlyWeatheredCopperConfig);
+    materialProperties.put("minecraft:semi_weathered_cut_copper", semiWeatheredCopperConfig);
+    materialProperties.put("minecraft:cut_copper_stairs", copperConfig);
+    materialProperties.put("minecraft:lightly_weathered_cut_copper_stairs", lightlyWeatheredCopperConfig);
+    materialProperties.put("minecraft:semi_weathered_cut_copper_stairs", semiWeatheredCopperConfig);
+    materialProperties.put("minecraft:cut_copper_slab", copperConfig);
+    materialProperties.put("minecraft:lightly_weathered_cut_copper_slab", lightlyWeatheredCopperConfig);
+    materialProperties.put("minecraft:semi_weathered_cut_copper_slab", semiWeatheredCopperConfig);
+    materialProperties.put("minecraft:waxed_copper", copperConfig);
+    materialProperties.put("minecraft:waxed_lightly_weathered_copper", lightlyWeatheredCopperConfig);
+    materialProperties.put("minecraft:waxed_semi_weathered_copper", semiWeatheredCopperConfig);
+    materialProperties.put("minecraft:waxed_cut_copper", copperConfig);
+    materialProperties.put("minecraft:waxed_lightly_weathered_cut_copper", lightlyWeatheredCopperConfig);
+    materialProperties.put("minecraft:waxed_semi_weathered_cut_copper", semiWeatheredCopperConfig);
+    materialProperties.put("minecraft:waxed_cut_copper_stairs", copperConfig);
+    materialProperties.put("minecraft:waxed_lightly_weathered_cut_copper_stairs", lightlyWeatheredCopperConfig);
+    materialProperties.put("minecraft:waxed_semi_weathered_cut_copper_stairs", semiWeatheredCopperConfig);
+    materialProperties.put("minecraft:waxed_cut_copper_slab", copperConfig);
+    materialProperties.put("minecraft:waxed_lightly_weathered_cut_copper_slab", lightlyWeatheredCopperConfig);
+    materialProperties.put("minecraft:waxed_semi_weathered_cut_copper_slab", semiWeatheredCopperConfig);
+    materialProperties.put("minecraft:lightning_rod", copperConfig);
+    materialProperties.put("minecraft:small_amethyst_bud", block -> {
+      if (block instanceof AmethystCluster && ((AmethystCluster) block).isLit()) {
+        block.emittance = 1.0f / 15f;
+      }
+    });
+    materialProperties.put("minecraft:medium_amethyst_bud", block -> {
+      if (block instanceof AmethystCluster && ((AmethystCluster) block).isLit()) {
+        block.emittance = 1.0f / 15f * 2;
+      }
+    });
+    materialProperties.put("minecraft:large_amethyst_bud", block -> {
+      if (block instanceof AmethystCluster && ((AmethystCluster) block).isLit()) {
+        block.emittance = 1.0f / 15f * 4;
+      }
+    });
+    materialProperties.put("minecraft:amethyst_cluster", block -> {
+      if (block instanceof AmethystCluster && ((AmethystCluster) block).isLit()) {
+        block.emittance = 1.0f / 15f * 5;
+      }
+    });
+    materialProperties.put("minecraft:tinted_glass", glassConfig);
+    materialProperties.put("minecraft:sculk_sensor", block -> {
+      if (block instanceof SculkSensor && ((SculkSensor) block).isActive()) {
+        block.emittance = 1.0f / 15f;
       }
     });
     return materialProperties;
