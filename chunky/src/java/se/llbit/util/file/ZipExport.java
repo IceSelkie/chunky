@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2016 Chunky committers
+/* Copyright (c) 2014-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -14,13 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.llbit.util;
+package se.llbit.util.file;
 
 import se.llbit.log.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
@@ -53,8 +52,7 @@ public class ZipExport {
     }
   }
 
-  private static void addToZipFile(ZipOutputStream zos, File sceneDir, String prefix,
-      String fileName) throws IOException {
+  private static void addToZipFile(ZipOutputStream zos, File sceneDir, String prefix, String fileName) throws IOException {
     File file = new File(sceneDir, fileName);
     try (FileInputStream fis = new FileInputStream(file)) {
       ZipEntry zipEntry = new ZipEntry(prefix + "/" + fileName);

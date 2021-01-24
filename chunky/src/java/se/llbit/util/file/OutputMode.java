@@ -1,4 +1,5 @@
-/* Copyright (c) 2015 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2015-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2015-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -14,49 +15,34 @@
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.llbit.chunky.renderer;
+package se.llbit.util.file;
 
-public enum OutputMode {
-  /**
-   * Standard PNG with 8-bit color channels.
-   */
-  PNG {
-    @Override public String toString() {
-      return "PNG";
-    }
+public enum OutputMode // outputFileTypes
+{
 
-    @Override public String getExtension() {
-      return ".png";
-    }
-  },
+  /** Standard PNG with 8-bit color channels. **/
+  PNG(".png", "PNG"),
 
-  /**
-   * TIFF with 32-bit color channels.
-   */
-  TIFF_32 {
-    @Override public String toString() {
-      return "TIFF, 32-bit floating point";
-    }
+  /** TIFF with 32-bit color channels. **/
+  TIFF_32(".tiff", "TIFF, 32-bit floating point"),
 
-    @Override public String getExtension() {
-      return ".tiff";
-    }
-  },
+  /** PFM with 32-bit color channels. **/
+  PFM(".pfm", "PFM, Portable FloatMap (32-bit)");
 
-  /**
-   * PFM with 32-bit color channels.
-   */
-  PFM {
-    @Override public String toString() {
-      return "PFM, Portable FloatMap (32-bit)";
-    }
+  private final String description;
+  private final String extension;
 
-    @Override public String getExtension() {
-      return ".pfm";
-    }
-  };
 
   public static final OutputMode DEFAULT = PNG;
+
+  OutputMode(String extension, String description) {
+    this.description = description;
+    this.extension = extension;
+  }
+  @Override
+  public String toString() {return description;}
+  public String getExtension() {return extension;}
+
 
   public static OutputMode get(String name) {
     try {
@@ -67,7 +53,7 @@ public enum OutputMode {
   }
 
   public static OutputMode fromExtension(String extension) {
-    switch (extension) {
+    switch (extension.toLowerCase()) {
       case ".png":
         return PNG;
       case ".tiff":
@@ -78,6 +64,4 @@ public enum OutputMode {
         return DEFAULT;
     }
   }
-
-  public abstract String getExtension();
 }

@@ -1,4 +1,5 @@
-/* Copyright (c) 2012 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -14,18 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.llbit.png;
+package se.llbit.chunky.renderer;
 
-/**
- * PNG IDAT chunk constants.
- *
- * @author Jesper Öqvist <jesper@llbit.se>
- */
-public interface IDAT {
-
-  /** PNG chunk type ID. */
-  int CHUNK_TYPE = 0x49444154;
-
-  /** The filter type for no filter. */
-  int FILTER_TYPE_NONE = 0;
+public enum RenderState {
+  PREVIEW,
+  RENDERING,
+  PAUSED,
 }

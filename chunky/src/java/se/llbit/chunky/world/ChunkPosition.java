@@ -1,4 +1,5 @@
-/* Copyright (c) 2010-2012 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2010-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2010-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,6 +17,9 @@
  */
 package se.llbit.chunky.world;
 
+import se.llbit.math.IntBoundingBox;
+
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -98,5 +102,15 @@ public class ChunkPosition {
    */
   public ChunkPosition getRegionPosition() {
     return get(x >> 5, z >> 5);
+  }
+
+  public static IntBoundingBox chunkBounds(Collection<ChunkPosition> chunks) {
+    IntBoundingBox bounding = new IntBoundingBox();
+
+    for (ChunkPosition cp : chunks) {
+      bounding.include(cp.x, cp.z);
+    }
+
+    return bounding.addMax(1).multiply(16);
   }
 }

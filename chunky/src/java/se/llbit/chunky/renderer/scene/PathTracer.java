@@ -1,4 +1,5 @@
-/* Copyright (c) 2013-2015 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2013-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2013-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -35,7 +36,9 @@ import java.util.Random;
 public class PathTracer implements RayTracer {
 
   /** Extinction factor for fog rendering. */
-  private static final double EXTINCTION_FACTOR = 0.04;
+  protected static final double EXTINCTION_FACTOR = 0.04;
+
+  protected static final double SUB_SURFACE_FACTOR = 0.3;
 
   /**
    * Path trace the ray.
@@ -130,7 +133,7 @@ public class PathTracer implements RayTracer {
 
         firstReflection = false;
 
-        if (!scene.kill(ray.depth + 1, random)) {
+        if (!scene.rayShouldDie(ray.depth + 1, random)) {
           Ray reflected = new Ray();
           reflected.specularReflection(ray, random);
 
@@ -149,7 +152,7 @@ public class PathTracer implements RayTracer {
 
           firstReflection = false;
 
-          if (!scene.kill(ray.depth + 1, random)) {
+          if (!scene.rayShouldDie(ray.depth + 1, random)) {
             Ray reflected = new Ray();
 
             float emittance = 0;
@@ -192,7 +195,7 @@ public class PathTracer implements RayTracer {
               boolean frontLight = reflected.d.dot(ray.n) > 0;
 
               if (frontLight || (currentMat.subSurfaceScattering
-                  && random.nextFloat() < Scene.fSubSurface)) {
+                  && random.nextFloat() < SUB_SURFACE_FACTOR)) {
 
                 if (!frontLight) {
                   reflected.o.scaleAdd(-Ray.OFFSET, ray.n);
@@ -260,7 +263,7 @@ public class PathTracer implements RayTracer {
           double radicand = 1 - n1n2 * n1n2 * (1 - cosTheta * cosTheta);
           if (doRefraction && radicand < Ray.EPSILON) {
             // Total internal reflection.
-            if (!scene.kill(ray.depth + 1, random)) {
+            if (!scene.rayShouldDie(ray.depth + 1, random)) {
               Ray reflected = new Ray();
               reflected.specularReflection(ray, random);
               if (pathTrace(scene, reflected, state, 1, false)) {
@@ -272,7 +275,7 @@ public class PathTracer implements RayTracer {
               }
             }
           } else {
-            if (!scene.kill(ray.depth + 1, random)) {
+            if (!scene.rayShouldDie(ray.depth + 1, random)) {
               Ray refracted = new Ray();
               refracted.set(ray);
 

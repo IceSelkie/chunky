@@ -1,4 +1,5 @@
-/* Copyright (c) 2019 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2019-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2019-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -14,15 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.llbit.chunky.resources;
+package se.llbit.util.file;
 
-import static se.llbit.math.Octree.DATA_FLAG;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import se.llbit.chunky.block.Block;
 import se.llbit.chunky.block.Lava;
 import se.llbit.chunky.block.Water;
@@ -30,6 +24,14 @@ import se.llbit.chunky.chunk.BlockPalette;
 import se.llbit.chunky.world.WorldTexture;
 import se.llbit.log.Log;
 import se.llbit.math.Octree;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+
+import static se.llbit.math.Octree.DATA_FLAG;
 
 public class OctreeFileFormat {
 
@@ -62,11 +64,10 @@ public class OctreeFileFormat {
   }
 
   /**
-   * This converts a v3-v4 octree to v5 while loading it. In v5, data nodes (only used for water and
-   * lava) were replaced by new per-variant types.
+   * This converts a v3-v4 octree to v5 while loading it. In v5, data nodes (only used for water and lava) were replaced
+   * by new per-variant types.
    *
-   * @param palette Block palette for the octree, new block variants for water and lava will be
-   *                added to it
+   * @param palette Block palette for the octree, new block variants for water and lava will be added to it
    * @param in      Input stream of a v3 or v4 octree
    * @return Input stream of a v5 octree
    * @throws IOException If reading or writing a streams fails
@@ -116,9 +117,8 @@ public class OctreeFileFormat {
   /**
    * Save octrees and grass/foliage/water textures to a file.
    */
-  public static void store(DataOutputStream out, Octree octree,
-      Octree waterTree, BlockPalette palette,
-      WorldTexture grassColors, WorldTexture foliageColors, WorldTexture waterColors)
+  public static void store(DataOutputStream out, Octree octree, Octree waterTree, BlockPalette palette,
+                           WorldTexture grassColors, WorldTexture foliageColors, WorldTexture waterColors)
       throws IOException {
     out.writeInt(OCTREE_VERSION);
     palette.write(out);
@@ -130,7 +130,6 @@ public class OctreeFileFormat {
   }
 
   public static class OctreeData {
-
     public Octree worldTree, waterTree;
     public WorldTexture grassColors, foliageColors, waterColors;
     public BlockPalette palette;

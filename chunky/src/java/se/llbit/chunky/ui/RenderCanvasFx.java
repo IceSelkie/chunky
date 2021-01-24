@@ -1,4 +1,5 @@
-/* Copyright (c) 2016-2019 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -230,10 +231,12 @@ public class RenderCanvasFx extends ScrollPane implements Repaintable, SceneStat
           e.consume();
           break;
         case W:
+        case K:
           renderScene.camera().moveForward(modifier);
           e.consume();
           break;
         case S:
+        case J:
           renderScene.camera().moveBackward(modifier);
           e.consume();
           break;
@@ -251,14 +254,6 @@ public class RenderCanvasFx extends ScrollPane implements Repaintable, SceneStat
           break;
         case F:
           renderScene.camera().moveDown(modifier);
-          e.consume();
-          break;
-        case J:
-          renderScene.camera().moveBackward(modifier);
-          e.consume();
-          break;
-        case K:
-          renderScene.camera().moveForward(modifier);
           e.consume();
           break;
         case SPACE:
