@@ -1,4 +1,5 @@
-/* Copyright (c) 2013-2014 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2013-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2013-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -19,9 +20,7 @@ package se.llbit.chunky.renderer.scene;
 import se.llbit.chunky.block.Air;
 import se.llbit.chunky.block.MinecraftBlock;
 import se.llbit.chunky.block.Water;
-import se.llbit.chunky.model.WaterModel;
 import se.llbit.chunky.renderer.WorkerState;
-import se.llbit.chunky.world.BlockData;
 import se.llbit.math.Ray;
 import se.llbit.math.Vector3;
 
@@ -95,14 +94,14 @@ public class PreviewRayTracer implements RayTracer {
     if (scene.waterHeight > 0) {
       hit = waterIntersection(scene, ray) || hit;
     }
-    if (scene.intersect(ray)) {
+    if (scene.intersectScene(ray)) {
       // Octree tracer handles updating distance.
       return true;
     }
     if (hit) {
       ray.distance += ray.t;
       ray.o.scaleAdd(ray.t, ray.d);
-      scene.updateOpacity(ray);
+      scene.updateRayOpacity(ray);
       return true;
     } else {
       ray.setCurrentMaterial(Air.INSTANCE);

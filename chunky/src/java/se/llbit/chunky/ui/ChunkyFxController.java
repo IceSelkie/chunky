@@ -1,4 +1,5 @@
-/* Copyright (c) 2016-2019 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -62,17 +63,14 @@ import se.llbit.chunky.main.ZipExportJob;
 import se.llbit.chunky.map.MapView;
 import se.llbit.chunky.map.WorldMapLoader;
 import se.llbit.chunky.renderer.CameraViewListener;
-import se.llbit.chunky.renderer.OutputMode;
+import se.llbit.chunky.renderer.scene.*;
+import se.llbit.util.file.OutputMode;
 import se.llbit.chunky.renderer.RenderController;
-import se.llbit.chunky.renderer.RenderMode;
+import se.llbit.chunky.renderer.RenderState;
 import se.llbit.chunky.renderer.RenderStatusListener;
 import se.llbit.chunky.renderer.Renderer;
 import se.llbit.chunky.renderer.ResetReason;
 import se.llbit.chunky.renderer.SnapshotControl;
-import se.llbit.chunky.renderer.scene.AsynchronousSceneManager;
-import se.llbit.chunky.renderer.scene.Camera;
-import se.llbit.chunky.renderer.scene.RenderResetHandler;
-import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.world.ChunkPosition;
 import se.llbit.chunky.world.ChunkSelectionTracker;
 import se.llbit.chunky.world.ChunkView;
@@ -253,7 +251,7 @@ public class ChunkyFxController
               gui.decimalFormat.format(sps))));
     }
 
-    @Override public void renderStateChanged(RenderMode state) {
+    @Override public void renderStateChanged(RenderState state) {
       Platform.runLater(() -> {
         switch (state) {
           case RENDERING:
@@ -353,7 +351,7 @@ public class ChunkyFxController
     renderer.setOnFrameCompleted((scene1, spp) -> {
       if (SnapshotControl.DEFAULT.saveSnapshot(scene1, spp)) {
 
-        scene1.saveSnapshot(new File(renderController.getContext().getSceneDirectory(), "snapshots"), taskTracker, renderController.getContext().numRenderThreads());
+        scene1.sceneSaver.saveSnapshot(new File(renderController.getContext().getSceneDirectory(), "snapshots"), taskTracker, renderController.getContext().numRenderThreads());
       }
 
       if (SnapshotControl.DEFAULT.saveRenderDump(scene1, spp)) {
@@ -669,7 +667,7 @@ public class ChunkyFxController
         (observable, oldValue, newValue) -> {
           boolean finalize = newValue == previewTab;
           scene.setBufferFinalization(finalize);
-          if (finalize && scene.getMode() == RenderMode.PREVIEW) {
+          if (finalize && scene.getMode() == RenderState.PREVIEW) {
             scene.refresh();
           }
         });
@@ -686,7 +684,7 @@ public class ChunkyFxController
     pause.setOnAction(e -> scene.pauseRender());
     reset.setGraphic(new ImageView(Icon.stop.fxImage()));
     reset.setTooltip(new Tooltip("Resets the current render. Discards render progress."));
-    reset.setOnAction(e -> scene.haltRender());
+    reset.setOnAction(e -> scene.stopRender());
     sppLbl.setTooltip(new Tooltip("SPP = Samples Per Pixel, SPS = Samples Per Second"));
     targetSpp.setName("Target SPP");
     targetSpp.setTooltip("Rendering is stopped after reaching the target Samples Per Pixel (SPP).");
@@ -756,7 +754,7 @@ public class ChunkyFxController
         target = new File(target.getPath() + extension);
       }
       // TODO: use a task tracker for progress display
-      scene.saveFrame(target, OutputMode.fromExtension(extension),
+      scene.sceneSaver.saveFrame(target, OutputMode.fromExtension(extension),
           new TaskTracker(ProgressListener.NONE), renderController.getContext().numRenderThreads());
     }
   }
@@ -767,7 +765,7 @@ public class ChunkyFxController
       PipedOutputStream out = new PipedOutputStream(in);
       new Thread(() -> {
         try {
-          scene.writeFrame(out, OutputMode.PNG, new TaskTracker(ProgressListener.NONE), renderController.getContext().numRenderThreads());
+          scene.sceneSaver.writeFrame(out, OutputMode.PNG, new TaskTracker(ProgressListener.NONE), renderController.getContext().numRenderThreads());
         } catch (IOException e) {
           Log.warn("Failed to copy image to clipboard", e);
         }
@@ -894,7 +892,7 @@ public class ChunkyFxController
   }
 
   private void saveSceneSafe(String sceneName) {
-    File oldFormat = new File(PersistentSettings.getSceneDirectory(), sceneName + Scene.EXTENSION);
+    File oldFormat = new File(PersistentSettings.getSceneDirectory(), sceneName + SceneSaver.EXTENSION);
     File newFormat = new File(PersistentSettings.getSceneDirectory(), sceneName);
     if (oldFormat.exists() || newFormat.exists()) {
       Alert alert = Dialogs.createAlert(Alert.AlertType.CONFIRMATION);

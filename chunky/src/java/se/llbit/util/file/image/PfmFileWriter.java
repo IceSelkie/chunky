@@ -13,6 +13,8 @@
  * GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package se.llbit.util.file.image;
 
 import se.llbit.chunky.renderer.Postprocess;
 import se.llbit.chunky.renderer.scene.Scene;
@@ -64,7 +66,7 @@ public class PfmFileWriter implements AutoCloseable {
     out.write(0x0a);
 
     // Declare Image Size
-    out.write((scene.canvasWidth()+" "+scene.canvasHeight()).getBytes(StandardCharsets.US_ASCII));
+    out.write((scene.canvasWidth() + " " + scene.canvasHeight()).getBytes(StandardCharsets.US_ASCII));
     out.write(0x0a);
 
     // Declare Byte Order
@@ -72,8 +74,7 @@ public class PfmFileWriter implements AutoCloseable {
     out.write(0x0a);
   }
 
-  private void writePixelData(Scene scene, ByteOrder byteOrder, TaskTracker.Task task) throws IOException
-  {
+  private void writePixelData(Scene scene, ByteOrder byteOrder, TaskTracker.Task task) throws IOException {
     int width = scene.canvasWidth();
     int height = scene.canvasHeight();
 
@@ -82,26 +83,26 @@ public class PfmFileWriter implements AutoCloseable {
     double[] sampleBuffer = scene.getSampleBuffer();
 
     // write each row...
-    for (int y = height-1; y >= 0; y--) {
-      task.update(height, height-y-1);
+    for (int y = height - 1; y >= 0; y--) {
+      task.update(height, height - y - 1);
 
       // Prepare our row buffers
-      ByteBuffer buffer = ByteBuffer.allocate(width*3*4).order(byteOrder);
+      ByteBuffer buffer = ByteBuffer.allocate(width * 3 * 4).order(byteOrder);
       FloatBuffer floatBuffer = buffer.asFloatBuffer();
 
       // get the row's data as floats
-      if (scene.postprocess == Postprocess.NONE)
+      if (scene.postprocess == Postprocess.NONE) {
         // from raw pixel data
-        for (int x = 0; x < 3*width; x++)
-          floatBuffer.put((float)sampleBuffer[y*width*3+x]);
-      else
+        for (int x = 0; x < 3 * width; x++) floatBuffer.put((float) sampleBuffer[y * width * 3 + x]);
+      } else {
         // or from post processor
         for (int x = 0; x < width; x++) {
-          scene.postProcessPixel(x, y, pixel);
-          floatBuffer.put((float)pixel[0]);
-          floatBuffer.put((float)pixel[1]);
-          floatBuffer.put((float)pixel[2]);
+          scene.render.postProcessPixel(x, y, pixel);
+          floatBuffer.put((float) pixel[0]);
+          floatBuffer.put((float) pixel[1]);
+          floatBuffer.put((float) pixel[2]);
         }
+      }
 
       // Write buffer to stream
       out.write(buffer.array());

@@ -1,4 +1,5 @@
-/* Copyright (c) 2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -19,8 +20,8 @@ package se.llbit.util;
 import java.util.NoSuchElementException;
 
 /**
- * This is a bounded size FIFO queue that has a nonblocking append operation.
- * Any items that do not fit in the queue are discarded.
+ * This is a bounded size FIFO queue that has a nonblocking append operation. Any items that do not fit in the queue are
+ * discarded.
  */
 public class RingBuffer<T> {
   private final Object[] data;
@@ -34,8 +35,8 @@ public class RingBuffer<T> {
   }
 
   /**
-   * Add an item to the buffer. This operation does not block: if the buffer
-   * is full the item is discarded.
+   * Add an item to the buffer. This operation does not block: if the buffer is full the item is discarded.
+   *
    * @return {@code true} if the item was added to the queue.
    */
   public boolean append(T item) {
@@ -54,6 +55,8 @@ public class RingBuffer<T> {
     if (size == 0) {
       throw new NoSuchElementException("Buffer is empty.");
     }
+
+    @SuppressWarnings("unchecked")
     T result = (T) data[remove];
     remove = (remove + 1) % capacity;
     size -= 1;

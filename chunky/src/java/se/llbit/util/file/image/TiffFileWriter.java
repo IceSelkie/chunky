@@ -15,16 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.llbit.tiff;
+package se.llbit.util.file.image;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.util.TaskTracker;
 
 import java.io.DataOutputStream;
-import java.io.OutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * TIFF image output. This supports 32-bit floating point channel output.
@@ -60,7 +60,8 @@ public class TiffFileWriter implements AutoCloseable {
   /**
    * @throws IOException
    */
-  @Override public void close() throws IOException {
+  @Override
+  public void close() throws IOException {
     out.close();
   }
 
@@ -225,7 +226,7 @@ public class TiffFileWriter implements AutoCloseable {
       task.update(height, y);
       for (int x = 0; x < width; ++x) {
         double[] pixel = new double[3];
-        scene.postProcessPixel(x, y, pixel);
+        scene.render.postProcessPixel(x, y, pixel);
         out.writeFloat((float) pixel[0]);
         out.writeFloat((float) pixel[1]);
         out.writeFloat((float) pixel[2]);

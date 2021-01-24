@@ -1,4 +1,5 @@
-/* Copyright (c) 2013 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2013-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2013-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,12 +17,13 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
+import se.llbit.chunky.resources.Texture;
+import se.llbit.util.BitmapImage;
+import se.llbit.util.file.ImageLoader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipFile;
-import se.llbit.chunky.resources.BitmapImage;
-import se.llbit.chunky.resources.Texture;
-import se.llbit.resources.ImageLoader;
 
 public class SplitLargeChestTexture extends TextureLoader {
   public enum Part {
@@ -46,7 +48,8 @@ public class SplitLargeChestTexture extends TextureLoader {
       Texture left,
       Texture right,
       Texture front,
-      Texture back) {
+      Texture back)
+  {
     this.file = file;
     this.part = part;
     this.top = top;
@@ -107,7 +110,8 @@ public class SplitLargeChestTexture extends TextureLoader {
       int width,
       int height,
       boolean hFlip,
-      boolean vFlip) {
+      boolean vFlip)
+  {
     BitmapImage img = new BitmapImage(scale * width, scale * height);
 
     img.blit(spritemap, 0, 0, x0 * scale, y0 * scale, (x0 + width) * scale, (y0 + height) * scale);

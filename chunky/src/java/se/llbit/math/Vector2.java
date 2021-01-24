@@ -1,4 +1,5 @@
-/* Copyright (c) 2013 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2013-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2013-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -17,12 +18,11 @@
 package se.llbit.math;
 
 import org.apache.commons.math3.util.FastMath;
-
 import se.llbit.json.JsonObject;
 import se.llbit.json.JsonValue;
 
 /**
- * A 3D vector of doubles.
+ * A 2D vector of doubles.
  *
  * @author Jesper Öqvist <jesper@llbit.se>
  */
@@ -169,7 +169,8 @@ public class Vector2 {
     y = a.y;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return String.format("(%f, %f)", x, y);
   }
 

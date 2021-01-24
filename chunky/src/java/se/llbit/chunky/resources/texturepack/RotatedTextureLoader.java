@@ -1,4 +1,5 @@
-/* Copyright (c) 2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,16 +17,15 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.chunky.resources.Texture;
+import se.llbit.util.BitmapImage;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipFile;
 
 /**
- * Loads a single texture and rotates it 90 degrees clockwise and
- * flips it horizontally (x & z coordinate swap).
+ * Loads a single texture and rotates it 90 degrees clockwise and flips it horizontally (x & z coordinate swap).
  *
  * @author Jesper Öqvist <jesper@llbit.se>
  */
@@ -38,7 +38,8 @@ public class RotatedTextureLoader extends TextureLoader {
     loader = new SimpleTexture(file, texture);
   }
 
-  @Override public boolean load(ZipFile texturePack, String topLevelDir) {
+  @Override
+  public boolean load(ZipFile texturePack, String topLevelDir) {
     if (!loader.load(texturePack, topLevelDir)) {
       return false;
     }
@@ -48,7 +49,8 @@ public class RotatedTextureLoader extends TextureLoader {
     return true;
   }
 
-  @Override protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
+  @Override
+  protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
     throw new TextureFormatError("Call simple texture sub-loader instead.");
   }
 

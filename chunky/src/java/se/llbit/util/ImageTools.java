@@ -1,4 +1,5 @@
-/* Copyright (c) 2010 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2010-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2010-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,7 +17,6 @@
  */
 package se.llbit.util;
 
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.math.ColorUtil;
 
 /**
@@ -24,7 +24,7 @@ import se.llbit.math.ColorUtil;
  *
  * @author Jesper Öqvist <jesper@llbit.se>
  */
-public class ImageTools {
+public final class ImageTools {
 
   /**
    * Calculate the average color across an image.

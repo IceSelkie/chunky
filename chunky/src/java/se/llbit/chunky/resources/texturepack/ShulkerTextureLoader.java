@@ -1,4 +1,5 @@
-/* Copyright (c) 2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,9 +17,9 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.chunky.resources.ShulkerTexture;
-import se.llbit.resources.ImageLoader;
+import se.llbit.util.BitmapImage;
+import se.llbit.util.file.ImageLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,10 +27,9 @@ import java.util.zip.ZipFile;
 
 /**
  * Loads a set of shulker textures for rendering shulker boxes.
- *
- * <p>The shulker texture is an entity texture with top and bottom parts for the sides.
- * For rendering shulker boxes we are only interested in a complete side texture, so
- * we manually merge the top and bottom parts to form a complete side.
+ * <p>
+ * The shulker texture is an entity texture with top and bottom parts for the sides. For rendering shulker boxes we are
+ * only interested in a complete side texture, so we manually merge the top and bottom parts to form a complete side.
  *
  * @author Jesper Öqvist <jesper@llbit.se>
  */
@@ -42,11 +42,11 @@ public class ShulkerTextureLoader extends TextureLoader {
     this.texture = texture;
   }
 
-  @Override protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
+  @Override
+  protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
     BitmapImage image = ImageLoader.read(imageStream);
     if (image.width != image.height || image.width % 16 != 0) {
-      throw new TextureFormatError(
-          "Shulker texture must have equal width and height, divisible by 16!");
+      throw new TextureFormatError("Shulker texture must have equal width and height, divisible by 16!");
     }
 
     int imgW = image.width;
@@ -75,8 +75,7 @@ public class ShulkerTextureLoader extends TextureLoader {
   }
 
   /**
-   * Load the side texture from the shulker entity texture.
-   * This stitches together the top and bottom parts of the first
+   * Load the side texture from the shulker entity texture. This stitches together the top and bottom parts of the first
    * side texture.
    */
   private static BitmapImage loadSide(BitmapImage spritemap, int scale) {
@@ -123,7 +122,8 @@ public class ShulkerTextureLoader extends TextureLoader {
     return image;
   }
 
-  @Override public boolean load(ZipFile texturePack, String topLevelDir) {
+  @Override
+  public boolean load(ZipFile texturePack, String topLevelDir) {
     return load(topLevelDir + entityTexture, texturePack);
   }
 }

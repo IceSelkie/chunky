@@ -1,4 +1,5 @@
-/* Copyright (c) 2019 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2019-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2019-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -20,7 +21,6 @@ import org.junit.Test;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.main.ChunkyOptions;
 import se.llbit.chunky.renderer.scene.Scene;
-import se.llbit.chunky.renderer.scene.Sky;
 import se.llbit.log.Log;
 
 /**
@@ -35,7 +35,8 @@ public class TestDeadlock {
       super(manager, id, 0);
     }
 
-    @Override public void run() {
+    @Override
+    public void run() {
       try {
         while (!isInterrupted()) {
           manager.getNextJob();
@@ -50,8 +51,7 @@ public class TestDeadlock {
   }
 
   /**
-   * Try to cause deadlock at start of scene rendering by starting
-   * many render jobs.
+   * Try to cause deadlock at start of scene rendering by starting many render jobs.
    */
   private static void repeatRender(Scene scene) throws InterruptedException {
     ChunkyOptions options = ChunkyOptions.getDefaults();
@@ -70,13 +70,14 @@ public class TestDeadlock {
   }
 
   /**
-   * Test for race condition leading to deadlock in render worker/render manager.
-   * See issue 507: https://github.com/llbit/chunky/issues/507
+   * Test for race condition leading to deadlock in render worker/render manager. See issue 507:
+   * https://github.com/llbit/chunky/issues/507
    */
-  @Test(timeout=60000) public void testDeadlock() throws InterruptedException {
+  @Test(timeout = 60000)
+  public void testDeadlock() throws InterruptedException {
     final Scene scene = new Scene();
     scene.setCanvasSize(WIDTH, HEIGHT);
-    scene.setRenderMode(RenderMode.RENDERING);
+    scene.setRenderMode(RenderState.RENDERING);
     scene.setTargetSpp(1);
     scene.setName("deadlock");
     repeatRender(scene);

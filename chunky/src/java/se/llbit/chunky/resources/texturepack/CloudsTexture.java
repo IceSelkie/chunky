@@ -1,4 +1,5 @@
-/* Copyright (c) 2013 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2013-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2013-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,9 +17,9 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.chunky.world.Clouds;
-import se.llbit.resources.ImageLoader;
+import se.llbit.util.BitmapImage;
+import se.llbit.util.file.ImageLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +35,8 @@ public class CloudsTexture extends TextureLoader {
     this.file = file;
   }
 
-  @Override protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
+  @Override
+  protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
     BitmapImage texture = ImageLoader.read(imageStream);
     if (texture.width != texture.height || texture.width != 256) {
       throw new TextureFormatError("Clouds texture size must be 256 by 256 pixels!");
@@ -49,7 +51,8 @@ public class CloudsTexture extends TextureLoader {
     return true;
   }
 
-  @Override public boolean load(ZipFile texturePack, String topLevelDir) {
+  @Override
+  public boolean load(ZipFile texturePack, String topLevelDir) {
     return load(topLevelDir + file, texturePack);
   }
 }

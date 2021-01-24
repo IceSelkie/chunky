@@ -1,4 +1,5 @@
-/* Copyright (c) 2013 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2013-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2013-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,8 +17,8 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.log.Log;
+import se.llbit.util.BitmapImage;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,15 +28,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * This class loads textures from a Minecraft resource pack.
- * Subclasses of this class are used for loading different kinds of
- * textures, e.g. entity textures, simple textures, chest textures etc.
+ * This class loads textures from a Minecraft resource pack. Subclasses of this class are used for loading different
+ * kinds of textures, e.g. entity textures, simple textures, chest textures etc.
  *
- * <p>Some textures need special processing to load, especially when
- * different texture formats are used in different Minecraft versions.
- * For example, block textures used to be stored in a texture atlas but now
- * are stored in separate files. We first try to load the texture from the
- * newest location, then try the texture atlas. Sometimes textures have
+ * <p>
+ * Some textures need special processing to load, especially when different texture formats are used in different
+ * Minecraft versions. For example, block textures used to be stored in a texture atlas but now are stored in separate
+ * files. We first try to load the texture from the newest location, then try the texture atlas. Sometimes textures have
  * been renamed multiple times, and we try to load from several different files.
  *
  * @author Jesper Öqvist <jesper@llbit.se>
@@ -49,10 +48,9 @@ public abstract class TextureLoader {
    * Attempt to load a texture from a texture pack.
    *
    * @param texturePack Reference to the texture pack zip file
-   * @param topLevelDir The top-level directory of the resource pack, with
-   * trailing slash. The assets directory should be inside the top-level directory.
-   * This can be empty, if the assets directory is a top-level directory of the
-   * Zip file.
+   * @param topLevelDir The top-level directory of the resource pack, with trailing slash. The assets directory should
+   *                    be inside the top-level directory. This can be empty, if the assets directory is a top-level
+   *                    directory of the Zip file.
    * @return <code>true</code> if the texture was successfully loaded
    */
   public abstract boolean load(ZipFile texturePack, String topLevelDir);

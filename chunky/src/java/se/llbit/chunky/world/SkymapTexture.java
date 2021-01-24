@@ -1,4 +1,5 @@
-/* Copyright (c) 2012-2014 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2012-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2012-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -18,18 +19,17 @@ package se.llbit.chunky.world;
 
 import org.apache.commons.math3.util.FastMath;
 import se.llbit.chunky.renderer.scene.Scene;
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.chunky.resources.Texture;
 import se.llbit.log.Log;
 import se.llbit.math.ColorUtil;
 import se.llbit.math.QuickMath;
 import se.llbit.math.Ray;
 import se.llbit.math.Vector4;
+import se.llbit.util.BitmapImage;
 import se.llbit.util.ImageTools;
 
 /**
- * Specialized skymap texture with multithreaded gamma correction
- * preprocessing.
+ * Specialized skymap texture with multithreaded gamma correction preprocessing.
  *
  * @author Jesper Öqvist (jesper@llbit.se)
  */
@@ -50,7 +50,8 @@ public class SkymapTexture extends Texture {
       this.y1 = y1;
     }
 
-    @Override public void run() {
+    @Override
+    public void run() {
       float[] c = new float[4];
       for (int y = y0; y <= y1; ++y) {
         for (int x = x0; x <= x1; ++x) {
@@ -73,7 +74,8 @@ public class SkymapTexture extends Texture {
     super(image);
   }
 
-  @Override public void setTexture(BitmapImage newImage) {
+  @Override
+  public void setTexture(BitmapImage newImage) {
     image = newImage;
 
     width = image.width;
@@ -99,13 +101,11 @@ public class SkymapTexture extends Texture {
     for (int i = 0; i < segX; ++i) {
       int x0 = w * i;
       int x1 = x0 + w - 1;
-      if ((i + 1) == segX)
-        x1 = width - 1;
+      if ((i + 1) == segX) { x1 = width - 1; }
       for (int j = 0; j < segY; ++j) {
         int y0 = h * j;
         int y1 = y0 + h - 1;
-        if ((j + 1) == segY)
-          y1 = height - 1;
+        if ((j + 1) == segY) { y1 = height - 1; }
         preprocessor[i][j] = new TexturePreprocessor(x0, x1, y0, y1);
         preprocessor[i][j].start();
       }
@@ -127,7 +127,8 @@ public class SkymapTexture extends Texture {
 
   }
 
-  @Override public void getColor(double u, double v, Vector4 c) {
+  @Override
+  public void getColor(double u, double v, Vector4 c) {
     ColorUtil.getRGBComponents(image.getPixel((int) (u * width - Ray.EPSILON),
         (int) ((1 - v) * height - Ray.EPSILON)), c);
   }
@@ -139,15 +140,18 @@ public class SkymapTexture extends Texture {
     ColorUtil.getRGBComponents(image.getPixel(x, y), c);
   }
 
-  @Override public void getColor(Ray ray) {
+  @Override
+  public void getColor(Ray ray) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public float[] getColor(double u, double v) {
+  @Override
+  public float[] getColor(double u, double v) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void getColorInterpolated(double u, double v, Vector4 c) {
+  @Override
+  public void getColorInterpolated(double u, double v, Vector4 c) {
     double x = u * (width - 1);
     double y = (1 - v) * (height - 1);
     double weight;
@@ -180,19 +184,23 @@ public class SkymapTexture extends Texture {
     c.set(r, g, b, 1);
   }
 
-  @Override public int getColorWrapped(int u, int v) {
+  @Override
+  public int getColorWrapped(int u, int v) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public int getAvgColor() {
+  @Override
+  public int getAvgColor() {
     throw new UnsupportedOperationException();
   }
 
-  @Override public void getAvgColorLinear(Vector4 c) {
+  @Override
+  public void getAvgColorLinear(Vector4 c) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public int getWidth() {
+  @Override
+  public int getWidth() {
     return super.getWidth();
   }
 }

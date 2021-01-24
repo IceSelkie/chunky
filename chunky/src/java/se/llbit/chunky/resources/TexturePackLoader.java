@@ -1,4 +1,5 @@
-/* Copyright (c) 2012-2019 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2012-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2012-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -40,7 +41,8 @@ import se.llbit.chunky.resources.texturepack.SimpleTexture;
 import se.llbit.chunky.resources.texturepack.TextureLoader;
 import se.llbit.chunky.resources.texturepack.ThinArmEntityTextureLoader;
 import se.llbit.log.Log;
-import se.llbit.resources.ImageLoader;
+import se.llbit.util.BitmapImage;
+import se.llbit.util.file.ImageLoader;
 import se.llbit.util.NotNull;
 
 import java.io.File;

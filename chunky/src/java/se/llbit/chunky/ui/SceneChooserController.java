@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -31,8 +31,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import se.llbit.chunky.main.SceneHelper;
-import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.chunky.renderer.scene.SceneSaver;
 import se.llbit.fxutil.Dialogs;
 import se.llbit.json.JsonObject;
 import se.llbit.json.JsonParser;
@@ -48,31 +47,33 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class SceneChooserController implements Initializable {
-  @FXML private TableView<SceneListItem> sceneTbl;
-
-  @FXML private TableColumn<SceneListItem, String> nameCol;
-
-  @FXML private TableColumn<SceneListItem, Number> chunkCountCol;
-
-  @FXML private TableColumn<SceneListItem, String> sizeCol;
-
-  @FXML private TableColumn<SceneListItem, Number> sppCol;
-
-  @FXML private TableColumn<SceneListItem, String> renderTimeCol;
-
-  @FXML private Button loadSceneBtn;
-
-  @FXML private Button cancelBtn;
-
-  @FXML private Button exportBtn;
-
-  @FXML private Button deleteBtn;
+  @FXML
+  private TableView<SceneListItem> sceneTbl;
+  @FXML
+  private TableColumn<SceneListItem, String> nameCol;
+  @FXML
+  private TableColumn<SceneListItem, Number> chunkCountCol;
+  @FXML
+  private TableColumn<SceneListItem, String> sizeCol;
+  @FXML
+  private TableColumn<SceneListItem, Number> sppCol;
+  @FXML
+  private TableColumn<SceneListItem, String> renderTimeCol;
+  @FXML
+  private Button loadSceneBtn;
+  @FXML
+  private Button cancelBtn;
+  @FXML
+  private Button exportBtn;
+  @FXML
+  private Button deleteBtn;
 
   private Stage stage;
 
   private ChunkyFxController controller;
 
-  @Override public void initialize(URL location, ResourceBundle resources) {
+  @Override
+  public void initialize(URL location, ResourceBundle resources) {
     exportBtn.setTooltip(new Tooltip("Exports the selected scene as a Zip archive."));
     exportBtn.setOnAction(e -> {
       if (!sceneTbl.getSelectionModel().isEmpty()) {
@@ -88,7 +89,7 @@ public class SceneChooserController implements Initializable {
         fileChooser.setInitialFileName(String.format("%s.zip", scene.sceneName));
         File targetFile = fileChooser.showSaveDialog(stage);
         if (targetFile != null) {
-          Scene.exportToZip(scene.sceneName, targetFile);
+          SceneSaver.exportToZip(scene.sceneName, targetFile);
         }
       }
     });
@@ -104,7 +105,7 @@ public class SceneChooserController implements Initializable {
         alert.setContentText(String.format("Are you sure you want to delete the scene %s? "
             + "All files for the scene, except snapshot images, will be deleted.", scene.sceneName));
         if (alert.showAndWait().get() == ButtonType.OK) {
-          Scene.delete(scene.sceneName, scene.sceneDirectory);
+          SceneSaver.delete(scene.sceneName, scene.sceneDirectory);
           sceneTbl.getItems().remove(sceneTbl.getSelectionModel().getSelectedItem());
         }
       }
@@ -168,11 +169,12 @@ public class SceneChooserController implements Initializable {
 
   private void populateSceneTable(File sceneDir) {
     List<SceneListItem> scenes = new ArrayList<>();
-    List<File> fileList = SceneHelper.getAvailableSceneFiles(sceneDir);
+    List<File> fileList = SceneSaver.getAvailableSceneFiles(sceneDir);
     Collections.sort(fileList);
     for (File sceneFile : fileList) {
 
-      try (JsonParser parser = new JsonParser(new FileInputStream(new File(sceneFile.getParentFile(), sceneFile.getName())))){
+      try (JsonParser parser = new JsonParser(new FileInputStream(new File(sceneFile.getParentFile(),
+          sceneFile.getName())))) {
         SceneListItem item = new SceneListItem(parser.parse().object(), sceneFile);
         scenes.add(item);
 
@@ -205,7 +207,7 @@ public class SceneChooserController implements Initializable {
     private final File sceneDirectory;
 
     private SceneListItem(JsonObject scene, File sceneFile) {
-      sceneName = sceneFile.getName().substring(0, sceneFile.getName().length() - Scene.EXTENSION.length());
+      sceneName = sceneFile.getName().substring(0, sceneFile.getName().length() - SceneSaver.EXTENSION.length());
       sceneDirectory = sceneFile.getParentFile();
       chunkSize = scene.get("chunkList").array().size();
       dimensions = String.format("%sx%s", scene.get("width").intValue(400), scene.get("height").intValue(400));
@@ -220,7 +222,8 @@ public class SceneChooserController implements Initializable {
 
     @Override
     public String toString() {
-      return String.format("Name:%s, Chunks:%d, Size:%s, Spp:%d, Time:%s, Location:%s", sceneName, chunkSize, dimensions, sppCount, renderTime, sceneDirectory.getName());
+      return String.format("Name:%s, Chunks:%d, Size:%s, Spp:%d, Time:%s, Location:%s", sceneName, chunkSize,
+          dimensions, sppCount, renderTime, sceneDirectory.getName());
     }
   }
 

@@ -1,4 +1,5 @@
-/* Copyright (c) 2013 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2013-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2013-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,12 +17,13 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
+import se.llbit.chunky.resources.Texture;
+import se.llbit.util.BitmapImage;
+import se.llbit.util.file.ImageLoader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipFile;
-import se.llbit.chunky.resources.BitmapImage;
-import se.llbit.chunky.resources.Texture;
-import se.llbit.resources.ImageLoader;
 
 /** @author Jesper Öqvist <jesper@llbit.se> */
 public class ChestTexture extends TextureLoader {
@@ -31,7 +33,7 @@ public class ChestTexture extends TextureLoader {
   }
 
   private final String file;
-  private Layout layout;
+  private final Layout layout;
   private final Texture lock;
   private final Texture top;
   private final Texture bottom;

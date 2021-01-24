@@ -1,4 +1,5 @@
-/* Copyright (c) 2012-2015 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2012-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2012-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -26,8 +27,8 @@ import se.llbit.math.ColorUtil;
 import se.llbit.math.QuickMath;
 import se.llbit.math.Ray;
 import se.llbit.math.Vector4;
-import se.llbit.resources.ImageLoader;
-import se.llbit.util.ImageTools;
+import se.llbit.util.BitmapImage;
+import se.llbit.util.file.ImageLoader;
 import se.llbit.util.NotNull;
 
 /**

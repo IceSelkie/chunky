@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2017 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2017-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2017-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -17,10 +17,10 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.chunky.resources.Texture;
 import se.llbit.math.ColorUtil;
-import se.llbit.resources.ImageLoader;
+import se.llbit.util.BitmapImage;
+import se.llbit.util.file.ImageLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +43,8 @@ public class ColoredTexture extends TextureLoader {
     ColorUtil.getRGBAComponents(color, this.color);
   }
 
-  @Override protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
+  @Override
+  protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
     BitmapImage image = ImageLoader.read(imageStream);
     float[] pixel = new float[4];
     for (int y = 0; y < image.height; ++y) {
@@ -61,11 +62,13 @@ public class ColoredTexture extends TextureLoader {
     return true;
   }
 
-  @Override public boolean load(ZipFile texturePack, String topLevelDir) {
+  @Override
+  public boolean load(ZipFile texturePack, String topLevelDir) {
     return load(topLevelDir + textureName, texturePack);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return String.format("{texture: %s, color: %s}", textureName, Arrays.toString(color));
   }
 }

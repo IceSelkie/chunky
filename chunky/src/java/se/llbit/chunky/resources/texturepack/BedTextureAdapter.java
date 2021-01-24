@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2017 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2017-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2017-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -17,7 +17,7 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import se.llbit.chunky.resources.BitmapImage;
+import se.llbit.util.BitmapImage;
 import se.llbit.chunky.resources.Texture;
 import se.llbit.log.Log;
 

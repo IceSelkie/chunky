@@ -1,4 +1,5 @@
-/* Copyright (c) 2012 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2012-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2012-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -19,6 +20,7 @@ package se.llbit.chunky.renderer;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.main.ChunkyOptions;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.chunky.renderer.scene.SceneSaver;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -80,7 +82,7 @@ public class RenderContext {
    * @return Scene description file
    */
   public File getSceneDescriptionFile(String sceneName) {
-    return getSceneFile(sceneName + Scene.EXTENSION);
+    return getSceneFile(sceneName + SceneSaver.EXTENSION);
   }
 
   /**
@@ -89,7 +91,7 @@ public class RenderContext {
    * @throws FileNotFoundException If the file does not exist.
    */
   public InputStream getSceneDescriptionInputStream(String sceneName) throws FileNotFoundException {
-    return getSceneFileInputStream(sceneName + Scene.EXTENSION);
+    return getSceneFileInputStream(sceneName + SceneSaver.EXTENSION);
   }
 
   /**
@@ -99,7 +101,7 @@ public class RenderContext {
    */
   public OutputStream getSceneDescriptionOutputStream(String sceneName)
       throws FileNotFoundException {
-    return getSceneFileOutputStream(sceneName + Scene.EXTENSION);
+    return getSceneFileOutputStream(sceneName + SceneSaver.EXTENSION);
   }
 
   /**

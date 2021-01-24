@@ -1,4 +1,5 @@
-/* Copyright (c) 2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -27,7 +28,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.stage.FileChooser;
 import se.llbit.chunky.PersistentSettings;
-import se.llbit.chunky.renderer.OutputMode;
 import se.llbit.chunky.renderer.RenderController;
 import se.llbit.chunky.renderer.scene.AsynchronousSceneManager;
 import se.llbit.chunky.renderer.scene.Scene;
@@ -35,6 +35,7 @@ import se.llbit.chunky.ui.IntegerAdjuster;
 import se.llbit.chunky.ui.RenderControlsFxController;
 import se.llbit.chunky.ui.ShutdownAlert;
 import se.llbit.math.Octree;
+import se.llbit.util.file.OutputMode;
 
 import java.io.File;
 import java.io.IOException;
@@ -93,26 +94,26 @@ public class AdvancedTab extends ScrollPane implements RenderControlsTab, Initia
     rayDepth.clampMin();
     rayDepth.onValueChange(value -> scene.setRayDepth(value));
     mergeRenderDump
-            .setTooltip(new Tooltip("Merge an existing render dump with the current render."));
+        .setTooltip(new Tooltip("Merge an existing render dump with the current render."));
     mergeRenderDump.setOnAction(e -> {
       FileChooser fileChooser = new FileChooser();
       fileChooser.setTitle("Merge Render Dump");
       fileChooser
-              .getExtensionFilters().add(new FileChooser.ExtensionFilter("Render dumps", "*.dump"));
+          .getExtensionFilters().add(new FileChooser.ExtensionFilter("Render dumps", "*.dump"));
       File dump = fileChooser.showOpenDialog(getScene().getWindow());
-      if(dump != null) {
+      if (dump != null) {
         // TODO: remove cast.
         ((AsynchronousSceneManager) controller.getSceneManager()).mergeRenderDump(dump);
       }
     });
     outputMode.getSelectionModel().selectedItemProperty()
-            .addListener((observable, oldValue, newValue) -> scene.setOutputMode(newValue));
-    if(!ShutdownAlert.canShutdown()) {
+        .addListener((observable, oldValue, newValue) -> scene.setOutputMode(newValue));
+    if (!ShutdownAlert.canShutdown()) {
       shutdown.setDisable(true);
     }
     fastFog.setTooltip(new Tooltip("Enable faster fog rendering algorithm."));
     fastFog.selectedProperty()
-            .addListener((observable, oldValue, newValue) -> scene.setFastFog(newValue));
+        .addListener((observable, oldValue, newValue) -> scene.setFastFog(newValue));
     renderThreads.setName("Render threads");
     renderThreads.setTooltip("Number of rendering threads.");
     renderThreads.setRange(1, 20);
@@ -124,7 +125,7 @@ public class AdvancedTab extends ScrollPane implements RenderControlsTab, Initia
 
     ArrayList<String> implNames = new ArrayList<>();
     StringBuilder tooltipTextBuilder = new StringBuilder();
-    for(Map.Entry<String, Octree.ImplementationFactory> entry : Octree.getEntries()) {
+    for (Map.Entry<String, Octree.ImplementationFactory> entry : Octree.getEntries()) {
       implNames.add(entry.getKey());
       tooltipTextBuilder.append(entry.getKey());
       tooltipTextBuilder.append(": ");
@@ -134,25 +135,26 @@ public class AdvancedTab extends ScrollPane implements RenderControlsTab, Initia
     tooltipTextBuilder.append("Requires reloading chunks to take effect.");
     octreeImplementation.getItems().addAll(implNames.toArray(new String[implNames.size()]));
     octreeImplementation.getSelectionModel().selectedItemProperty()
-            .addListener((observable, oldvalue, newvalue) -> {
-              scene.setOctreeImplementation(newvalue);
-              PersistentSettings.setOctreeImplementation(newvalue);
-            });
+        .addListener((observable, oldvalue, newvalue) -> {
+          scene.setOctreeImplementation(newvalue);
+          PersistentSettings.setOctreeImplementation(newvalue);
+        });
     octreeImplementation.setTooltip(new Tooltip(
-            tooltipTextBuilder.toString()
+        tooltipTextBuilder.toString()
     ));
 
     gridSize.setRange(4, 64);
     gridSize.setName("Emitter grid size");
     gridSize.setTooltip("Size of the cells of the emitter grid. " +
-            "The bigger, the more emitter will be sampled. " +
-            "Need the chunks to be reloaded to apply");
+        "The bigger, the more emitter will be sampled. " +
+        "Need the chunks to be reloaded to apply");
     gridSize.onValueChange(value -> {
-      scene.setGridSize(value);
+      scene.setEmitterGridSize(value);
       PersistentSettings.setGridSizeDefault(value);
     });
 
-    preventNormalEmitterWithSampling.setTooltip(new Tooltip("Prevent usual emitter contribution when emitter sampling is used"));
+    preventNormalEmitterWithSampling.setTooltip(new Tooltip("Prevent usual emitter contribution when emitter sampling" +
+        " is used"));
     preventNormalEmitterWithSampling.selectedProperty().addListener((observable, oldvalue, newvalue) -> {
       scene.setPreventNormalEmitterWithSampling(newvalue);
       PersistentSettings.setPreventNormalEmitterWithSampling(newvalue);
@@ -171,7 +173,7 @@ public class AdvancedTab extends ScrollPane implements RenderControlsTab, Initia
     cpuLoad.set(PersistentSettings.getCPULoad());
     rayDepth.set(scene.getRayDepth());
     octreeImplementation.getSelectionModel().select(scene.getOctreeImplementation());
-    gridSize.set(scene.getGridSize());
+    gridSize.set(scene.getEmitterGridSize());
     preventNormalEmitterWithSampling.setSelected(scene.isPreventNormalEmitterWithSampling());
   }
 
@@ -191,7 +193,7 @@ public class AdvancedTab extends ScrollPane implements RenderControlsTab, Initia
     this.controller = controls.getRenderController();
     scene = controller.getSceneManager().getScene();
     controller.getRenderer().setOnRenderCompleted((time, sps) -> {
-      if(shutdownAfterCompletedRender()) {
+      if (shutdownAfterCompletedRender()) {
         // TODO: rewrite the shutdown alert in JavaFX.
         new ShutdownAlert(null);
       }

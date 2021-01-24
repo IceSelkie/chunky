@@ -1,4 +1,5 @@
-/* Copyright (c) 2010-2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2010-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2010-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -24,7 +25,7 @@ import javafx.scene.image.WritablePixelFormat;
 import se.llbit.chunky.world.ChunkPosition;
 import se.llbit.chunky.world.ChunkSelectionTracker;
 import se.llbit.chunky.world.ChunkView;
-import se.llbit.png.PngFileWriter;
+import se.llbit.util.file.image.png.PngFileWriter;
 import se.llbit.util.RingBuffer;
 import se.llbit.util.TaskTracker;
 

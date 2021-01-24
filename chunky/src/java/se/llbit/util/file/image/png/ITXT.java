@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.llbit.png;
+package se.llbit.util.file.image.png;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -33,7 +33,8 @@ public class ITXT extends PngChunk {
     this.text = text;
   }
 
-  @Override protected void writeChunkData(DataOutputStream out) throws IOException {
+  @Override
+  protected void writeChunkData(DataOutputStream out) throws IOException {
     try (
       CrcOutputStream crcOutputStream = new CrcOutputStream();
       DataOutputStream crcOut = new DataOutputStream(crcOutputStream);
@@ -70,15 +71,18 @@ public class ITXT extends PngChunk {
     }
   }
 
-  @Override public int getChunkLength() {
+  @Override
+  public int getChunkLength() {
     return keyword.length() + 5 + text.length();
   }
 
-  @Override public int getChunkType() {
+  @Override
+  public int getChunkType() {
     return CHUNK_TYPE;
   }
 
-  @Override public int getChunkCRC() {
+  @Override
+  public int getChunkCRC() {
     return crc;
   }
 

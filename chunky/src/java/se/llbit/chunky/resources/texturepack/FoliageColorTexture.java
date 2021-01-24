@@ -1,4 +1,5 @@
-/* Copyright (c) 2013 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2013-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2013-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,9 +17,9 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.chunky.world.Biomes;
-import se.llbit.resources.ImageLoader;
+import se.llbit.util.BitmapImage;
+import se.llbit.util.file.ImageLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +35,8 @@ public class FoliageColorTexture extends TextureLoader {
     this.file = file;
   }
 
-  @Override protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
+  @Override
+  protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
     BitmapImage foliageColor = ImageLoader.read(imageStream);
     if (foliageColor.width != 256 || foliageColor.height != 256) {
       throw new TextureFormatError("Foliage color texture must be 256 by 256 pixels!");
@@ -43,7 +45,8 @@ public class FoliageColorTexture extends TextureLoader {
     return true;
   }
 
-  @Override public boolean load(ZipFile texturePack, String topLevelDir) {
+  @Override
+  public boolean load(ZipFile texturePack, String topLevelDir) {
     return load(topLevelDir + file, texturePack);
   }
 }

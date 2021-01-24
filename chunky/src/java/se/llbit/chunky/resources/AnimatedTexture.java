@@ -1,4 +1,5 @@
-/* Copyright (c) 2015 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2015-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2015-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -17,6 +18,7 @@
 package se.llbit.chunky.resources;
 
 import se.llbit.math.Ray;
+import se.llbit.util.BitmapImage;
 
 /**
  * Basic animated texture extension.
@@ -42,7 +44,8 @@ public class AnimatedTexture extends Texture {
         (int) ((1 - v) * frameHeight - Ray.EPSILON + i * frameHeight));
   }
 
-  @Override public void setTexture(BitmapImage newImage) {
+  @Override
+  public void setTexture(BitmapImage newImage) {
     super.setTexture(newImage);
     updateNumFrames();
   }

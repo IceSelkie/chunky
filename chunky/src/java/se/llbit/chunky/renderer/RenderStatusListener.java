@@ -1,4 +1,5 @@
-/* Copyright (c) 2012-2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2012-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2012-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -30,7 +31,7 @@ public interface RenderStatusListener {
     @Override public void setSpp(int spp) {
     }
 
-    @Override public void renderStateChanged(RenderMode state) {
+    @Override public void renderStateChanged(RenderState state) {
     }
   };
 
@@ -71,7 +72,7 @@ public interface RenderStatusListener {
    *
    * @param state the new rendering state
    */
-  void renderStateChanged(RenderMode state);
+  void renderStateChanged(RenderState state);
 
   /** Determines if a render dump should be saved after this frame. */
   /*default boolean saveRenderDump(Scene scene, int nextSpp) {

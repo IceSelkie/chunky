@@ -1,4 +1,5 @@
-/* Copyright (c) 2012-2019 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2012-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2012-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -76,7 +77,7 @@ public class RenderWorker extends Thread {
 
         // Sleep to manage CPU utilization.
         if (jobTime > SLEEP_INTERVAL) {
-          if (manager.cpuLoad < 100 && manager.getBufferedScene().getMode() != RenderMode.PREVIEW) {
+          if (manager.cpuLoad < 100 && manager.getBufferedScene().getMode() != RenderState.PREVIEW) {
             // sleep = jobTime * (1-utilization) / utilization
             double load = (100.0 - manager.cpuLoad) / manager.cpuLoad;
             sleep((long) (jobTime / 1000000.0 * load));
@@ -111,7 +112,7 @@ public class RenderWorker extends Thread {
     double[] samples = scene.getSampleBuffer();
     final Camera cam = scene.camera();
 
-    if (scene.getMode() != RenderMode.PREVIEW) {
+    if (scene.getMode() != RenderState.PREVIEW) {
       for (int y = tile.y0; y < tile.y1; ++y) {
         int offset = y * width * 3 + tile.x0 * 3;
         for (int x = tile.x0; x < tile.x1; ++x) {
@@ -139,7 +140,7 @@ public class RenderWorker extends Thread {
           samples[offset + 2] = (samples[offset + 2] * scene.spp + sb) * sinv;
 
           if (scene.shouldFinalizeBuffer()) {
-            scene.finalizePixel(x, y);
+            scene.render.finalizePixel(x, y);
           }
 
           offset += 3;
@@ -157,14 +158,14 @@ public class RenderWorker extends Thread {
       for (int x = tile.x0; x < tile.x1; ++x)
         for (int y = tile.y0; y < tile.y1; ++y) {
 
-          boolean firstFrame = scene.previewCount > 1;
+          boolean firstFrame = scene.render.previewCount > 1;
           if (firstFrame) {
             if (((x + y) % 2) == 0) {
               continue;
             }
           } else {
             if (((x + y) % 2) != 0) {
-              scene.finalizePixel(x, y);
+              scene.render.finalizePixel(x, y);
               continue;
             }
           }
@@ -175,7 +176,7 @@ public class RenderWorker extends Thread {
             samples[(y * width + x) * 3 + 0] = 0xFF;
             samples[(y * width + x) * 3 + 1] = 0xFF;
             samples[(y * width + x) * 3 + 2] = 0xFF;
-            scene.finalizePixel(x, y);
+            scene.render.finalizePixel(x, y);
             continue;
           }
 
@@ -199,15 +200,15 @@ public class RenderWorker extends Thread {
           samples[(y * width + x) * 3 + 1] = ray.color.y;
           samples[(y * width + x) * 3 + 2] = ray.color.z;
 
-          scene.finalizePixel(x, y);
+          scene.render.finalizePixel(x, y);
 
           if (firstFrame) {
             if (y % 2 == 0 && x < (width - 1)) {
               // Copy the current pixel to the next one.
-              scene.copyPixel(y * width + x, 1);
+              scene.render.copyPixel(y * width + x, 1);
             } else if (y % 2 != 0 && x > 0) {
               // Copy the next pixel to this pixel.
-              scene.copyPixel(y * width + x, -1);
+              scene.render.copyPixel(y * width + x, -1);
             }
           }
         }

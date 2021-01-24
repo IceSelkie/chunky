@@ -1,4 +1,5 @@
-/* Copyright (c) 2017-2019 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2017-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2017-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -33,18 +34,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
- * Simple integration tests to verify that rendering
- * a blank scene works as it should.
- * The tests render using a small canvas size and with
- * only two samples per pixel.
+ * Simple integration tests to verify that rendering a blank scene works as it should.
+ * <p>
+ * The tests render using a small canvas size and with only two samples per pixel.
  */
 public class TestBlankRender {
   private static final int WIDTH = Math.max(10, Scene.MIN_CANVAS_WIDTH);
   private static final int HEIGHT = Math.max(10, Scene.MIN_CANVAS_HEIGHT);
 
   /**
-   * Renders one sample per pixel and checks that the color values are
-   * close enough to the expected color.
+   * Renders one sample per pixel and checks that the color values are close enough to the expected color.
    */
   private static void renderAndCheckSamples(Scene scene, double[] expected)
       throws InterruptedException {
@@ -96,36 +95,40 @@ public class TestBlankRender {
   /**
    * Render with a fully black sky.
    */
-  @Test public void testBlackSky() throws InterruptedException {
+  @Test
+  public void testBlackSky() throws InterruptedException {
     final Scene scene = new Scene();
     scene.setCanvasSize(WIDTH, HEIGHT);
-    scene.setRenderMode(RenderMode.RENDERING);
+    scene.setRenderMode(RenderState.RENDERING);
     scene.setTargetSpp(2);
     scene.setName("foobar");
     scene.sky().setSkyMode(Sky.SkyMode.BLACK);
-    renderAndCheckSamples(scene, new double[] {0, 0, 0});
+    renderAndCheckSamples(scene, new double[]{0, 0, 0});
   }
 
   /**
    * Render with a solid sky color.
    */
-  @Test public void testSolidColorSky() throws InterruptedException {
+  @Test
+  public void testSolidColorSky() throws InterruptedException {
     final Scene scene = new Scene();
     scene.setCanvasSize(WIDTH, HEIGHT);
-    scene.setRenderMode(RenderMode.RENDERING);
+    scene.setRenderMode(RenderState.RENDERING);
     scene.setTargetSpp(2);
     scene.setName("foobar");
     scene.sky().setSkyMode(Sky.SkyMode.SOLID_COLOR);
     scene.sky().setColor(new Vector3(0.9, 0.8, 1.0));
-    renderAndCheckSamples(scene, new double[] { 0.9, 0.8, 1.0 });
+    renderAndCheckSamples(scene, new double[]{0.9, 0.8, 1.0});
   }
+
   /**
    * Render with a gray gradient sky.
    */
-  @Test public void testGradientSky() throws InterruptedException {
+  @Test
+  public void testGradientSky() throws InterruptedException {
     final Scene scene = new Scene();
     scene.setCanvasSize(WIDTH, HEIGHT);
-    scene.setRenderMode(RenderMode.RENDERING);
+    scene.setRenderMode(RenderState.RENDERING);
     scene.sky().setSkyMode(Sky.SkyMode.GRADIENT);
     List<Vector4> white = new ArrayList<>();
     white.add(new Vector4(0.5, 0.5, 0.5, 0));
@@ -133,16 +136,17 @@ public class TestBlankRender {
     scene.sky().setGradient(white);
     scene.setTargetSpp(2);
     scene.setName("gray");
-    renderAndCheckSamples(scene, new double[] {0.5, 0.5, 0.5});
+    renderAndCheckSamples(scene, new double[]{0.5, 0.5, 0.5});
   }
 
   /**
    * Test that render output is correct after JSON export/import.
    */
-  @Test public void testJsonRoundTrip1() throws InterruptedException {
+  @Test
+  public void testJsonRoundTrip1() throws InterruptedException {
     final Scene scene = new Scene();
     scene.setCanvasSize(WIDTH, HEIGHT);
-    scene.setRenderMode(RenderMode.RENDERING);
+    scene.setRenderMode(RenderState.RENDERING);
     scene.sky().setSkyMode(Sky.SkyMode.GRADIENT);
     List<Vector4> white = new ArrayList<>();
     white.add(new Vector4(0.5, 1, 0.25, 0));
@@ -151,20 +155,21 @@ public class TestBlankRender {
     scene.setTargetSpp(2);
     scene.setName("json1");
     JsonObject json = scene.toJson();
-    scene.fromJson(json);
-    scene.setRenderMode(RenderMode.RENDERING); // Un-pause after JSON import.
-    renderAndCheckSamples(scene, new double[] {0.5, 1, 0.25});
+    scene.sceneSaver.fromJson(json);
+    scene.setRenderMode(RenderState.RENDERING); // Un-pause after JSON import.
+    renderAndCheckSamples(scene, new double[]{0.5, 1, 0.25});
   }
 
   /**
    * Test that render output is correct after JSON export/import.
    */
-  @Test public void testJsonRoundTrip2() throws InterruptedException {
+  @Test
+  public void testJsonRoundTrip2() throws InterruptedException {
     final Scene scene = new Scene();
     scene.setTargetSpp(2);
     scene.setName("json2");
     scene.setCanvasSize(WIDTH, HEIGHT);
-    scene.setRenderMode(RenderMode.RENDERING);
+    scene.setRenderMode(RenderState.RENDERING);
     scene.sky().setSkyMode(Sky.SkyMode.SIMULATED);
     scene.camera().setProjectionMode(ProjectionMode.PANORAMIC);
     scene.camera().setFoV(100);
@@ -174,8 +179,8 @@ public class TestBlankRender {
     System.arraycopy(render(scene), 0, samples1, 0, size);
 
     JsonObject json = scene.toJson();
-    scene.fromJson(json);
-    scene.setRenderMode(RenderMode.RENDERING); // Un-pause after JSON import.
+    scene.sceneSaver.fromJson(json);
+    scene.setRenderMode(RenderState.RENDERING); // Un-pause after JSON import.
 
     compareSamples(samples1, render(scene), size, 0.005);
   }

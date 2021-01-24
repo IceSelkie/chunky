@@ -1,4 +1,5 @@
-/* Copyright (c) 2013-2014 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2013-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2013-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -18,9 +19,9 @@ package se.llbit.chunky.world;
 
 import org.apache.commons.math3.util.FastMath;
 import se.llbit.chunky.renderer.scene.Scene;
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.math.ColorUtil;
 import se.llbit.math.QuickMath;
+import se.llbit.util.BitmapImage;
 
 /**
  * Biome constants and utility methods.
@@ -183,7 +184,7 @@ public class Biomes {
    */
   public static void loadGrassColors(BitmapImage texture) {
     loadColorsFromTexture(grassColor, texture);
-    
+
     // Dark forest biomes' grass color is retrieved normally, then averaged with 0x28340A to produce the final color
     float[] color = new float[3];
     for (int id : DARK_FOREST_IDS) {
@@ -193,12 +194,12 @@ public class Biomes {
       color[2] += 10 / 255.f;
       grassColor[id] = ColorUtil.getRGB(color[0] / 2, color[1] / 2, color[2] / 2);
     }
-    
+
     // Badland biome's grass color is hardcoded
     for (int id : BADLANDS_IDS) {
       grassColor[id] = 0x90814D;
     }
-    
+
     gammaCorrectColors(grassColor, grassColorLinear);
   }
 

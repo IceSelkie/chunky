@@ -1,4 +1,5 @@
-/* Copyright (c) 2015 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2015-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2015-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,7 +17,7 @@
  */
 package se.llbit.util;
 
-public abstract class StringUtil {
+public final class StringUtil {
   /**
    * Join the string arguments using a separator string.
    */

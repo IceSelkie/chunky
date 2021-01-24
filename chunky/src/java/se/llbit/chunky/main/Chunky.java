@@ -1,4 +1,5 @@
-/* Copyright (c) 2010-2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2010-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2010-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -24,7 +25,7 @@ import se.llbit.chunky.main.CommandLineOptions.Mode;
 import se.llbit.chunky.plugin.ChunkyPlugin;
 import se.llbit.chunky.plugin.TabTransformer;
 import se.llbit.chunky.renderer.ConsoleProgressListener;
-import se.llbit.chunky.renderer.OutputMode;
+import se.llbit.util.file.OutputMode;
 import se.llbit.chunky.renderer.RayTracerFactory;
 import se.llbit.chunky.renderer.RenderContext;
 import se.llbit.chunky.renderer.RenderContextFactory;
@@ -136,7 +137,7 @@ public class Chunky {
     renderer.setSnapshotControl(SnapshotControl.DEFAULT);
     renderer.setOnFrameCompleted((scene, spp) -> {
       if (SnapshotControl.DEFAULT.saveSnapshot(scene, spp)) {
-        scene.saveSnapshot(new File(getRenderContext().getSceneDirectory(), "snapshots"),
+        scene.sceneSaver.saveSnapshot(new File(getRenderContext().getSceneDirectory(), "snapshots"),
             taskTracker, getRenderContext().numRenderThreads());
       }
 
@@ -291,7 +292,7 @@ public class Chunky {
       File file = options.getSceneDescriptionFile();
       try (FileInputStream in = new FileInputStream(file)) {
         Scene scene = new Scene();
-        scene.loadDescription(in); // Load description to get current SPP & canvas size.
+        scene.sceneSaver.loadDescription(in); // Load description to get current SPP & canvas size.
         RenderContext context = new RenderContext(this);
         context.setSceneDirectory(file.getParentFile());
         TaskTracker taskTracker = new TaskTracker(new ConsoleProgressListener(),
@@ -302,14 +303,14 @@ public class Chunky {
                 // Don't report task state to progress listener.
               }
             });
-        scene.loadDump(context, taskTracker); // Load the render dump.
+        scene.sceneSaver.loadDump(context, taskTracker); // Load the render dump.
         OutputMode outputMode = scene.getOutputMode();
         if (options.imageOutputFile.isEmpty()) {
           options.imageOutputFile = String
               .format("%s-%d%s", scene.name(), scene.spp, outputMode.getExtension());
         }
         System.out.println("Image output mode: " + outputMode);
-        scene.saveFrame(new File(options.imageOutputFile), taskTracker, context.numRenderThreads());
+        scene.sceneSaver.saveFrame(new File(options.imageOutputFile), taskTracker, context.numRenderThreads());
         System.out.println("Saved snapshot to " + options.imageOutputFile);
         return 0;
       }

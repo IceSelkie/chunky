@@ -1,4 +1,5 @@
-/* Copyright (c) 2015 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2015-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2015-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,9 +17,9 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.chunky.resources.EntityTexture;
-import se.llbit.resources.ImageLoader;
+import se.llbit.util.BitmapImage;
+import se.llbit.util.file.ImageLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +39,8 @@ public class EntityTextureLoader extends TextureLoader {
     this.texture = texture;
   }
 
-  @Override protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
+  @Override
+  protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
     BitmapImage image = ImageLoader.read(imageStream);
 
     if (image.width != image.height && image.width != 2 * image.height) {
@@ -125,7 +127,8 @@ public class EntityTextureLoader extends TextureLoader {
     return true;
   }
 
-  @Override public boolean load(ZipFile texturePack, String topLevelDir) {
+  @Override
+  public boolean load(ZipFile texturePack, String topLevelDir) {
     return load(topLevelDir + file, texturePack);
   }
 

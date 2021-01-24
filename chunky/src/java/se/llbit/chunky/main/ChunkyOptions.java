@@ -1,4 +1,5 @@
-/* Copyright (c) 2014 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2014-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2014-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -19,6 +20,7 @@ package se.llbit.chunky.main;
 import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.renderer.RenderConstants;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.chunky.renderer.scene.SceneSaver;
 
 import java.io.File;
 
@@ -72,21 +74,21 @@ public class ChunkyOptions {
    * @return the scene description file handle
    */
   public File getSceneDescriptionFile() {
-    if (sceneName.endsWith(Scene.EXTENSION)) {
+    if (sceneName.endsWith(SceneSaver.EXTENSION)) {
       return new File(sceneName);
     } else {
       if (sceneDir != null) {
         File thisSceneDir = new File(sceneDir, sceneName);
         if (thisSceneDir.isDirectory()) {
-          return new File(thisSceneDir, sceneName + Scene.EXTENSION);
+          return new File(thisSceneDir, sceneName + SceneSaver.EXTENSION);
         }
-        return new File(sceneDir, sceneName + Scene.EXTENSION);
+        return new File(sceneDir, sceneName + SceneSaver.EXTENSION);
       } else {
         File thisSceneDir = new File(PersistentSettings.getSceneDirectory(), sceneName);
         if (thisSceneDir.isDirectory()) {
-          return new File(thisSceneDir, sceneName + Scene.EXTENSION);
+          return new File(thisSceneDir, sceneName + SceneSaver.EXTENSION);
         }
-        return new File(PersistentSettings.getSceneDirectory(), sceneName + Scene.EXTENSION);
+        return new File(PersistentSettings.getSceneDirectory(), sceneName + SceneSaver.EXTENSION);
       }
     }
   }

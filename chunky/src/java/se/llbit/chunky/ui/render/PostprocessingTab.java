@@ -1,4 +1,5 @@
-/* Copyright (c) 2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -23,7 +24,6 @@ import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ScrollPane;
 import se.llbit.chunky.renderer.Postprocess;
-import se.llbit.chunky.renderer.RenderMode;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.ui.DoubleAdjuster;
 import se.llbit.chunky.ui.RenderControlsFxController;
@@ -38,8 +38,10 @@ public class PostprocessingTab extends ScrollPane implements RenderControlsTab, 
   private Scene scene;
   private RenderControlsFxController controller;
 
-  @FXML private DoubleAdjuster exposure;
-  @FXML private ChoiceBox<Postprocess> postprocessingMode;
+  @FXML
+  private DoubleAdjuster exposure;
+  @FXML
+  private ChoiceBox<Postprocess> postprocessingMode;
 
   public PostprocessingTab() throws IOException {
     FXMLLoader loader = new FXMLLoader(getClass().getResource("PostprocessingTab.fxml"));
@@ -48,31 +50,36 @@ public class PostprocessingTab extends ScrollPane implements RenderControlsTab, 
     loader.load();
   }
 
-  @Override public void setController(RenderControlsFxController controller) {
+  @Override
+  public void setController(RenderControlsFxController controller) {
     this.controller = controller;
     scene = controller.getRenderController().getSceneManager().getScene();
   }
 
-  @Override public void update(Scene scene) {
+  @Override
+  public void update(Scene scene) {
     postprocessingMode.getSelectionModel().select(scene.getPostprocess());
     exposure.set(scene.getExposure());
   }
 
-  @Override public String getTabTitle() {
+  @Override
+  public String getTabTitle() {
     return "Postprocessing";
   }
 
-  @Override public Node getTabContent() {
+  @Override
+  public Node getTabContent() {
     return this;
   }
 
-  @Override public void initialize(URL location, ResourceBundle resources) {
+  @Override
+  public void initialize(URL location, ResourceBundle resources) {
     postprocessingMode.getItems().addAll(Postprocess.values());
     postprocessingMode.getSelectionModel().select(Postprocess.DEFAULT);
     postprocessingMode.getSelectionModel().selectedItemProperty().addListener(
         (observable, oldValue, newValue) -> {
           scene.setPostprocess(newValue);
-          scene.postProcessFrame(new TaskTracker(ProgressListener.NONE));
+          scene.render.postProcessFrame(new TaskTracker(ProgressListener.NONE));
           controller.getCanvas().forceRepaint();
         });
     exposure.setName("Exposure");
@@ -81,7 +88,7 @@ public class PostprocessingTab extends ScrollPane implements RenderControlsTab, 
     exposure.clampMin();
     exposure.onValueChange(value -> {
       scene.setExposure(value);
-      scene.postProcessFrame(new TaskTracker(ProgressListener.NONE));
+      scene.render.postProcessFrame(new TaskTracker(ProgressListener.NONE));
       controller.getCanvas().forceRepaint();
     });
   }

@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -17,10 +17,10 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.chunky.resources.Texture;
 import se.llbit.log.Log;
-import se.llbit.resources.ImageLoader;
+import se.llbit.util.BitmapImage;
+import se.llbit.util.file.ImageLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,13 +37,14 @@ public class LayeredTextureLoader extends TextureLoader {
   private final Texture texture;
 
   public LayeredTextureLoader(String file, Texture texture,
-      TextureLoader baseTextureLoader) {
+                              TextureLoader baseTextureLoader) {
     this.textureName = file;
     this.texture = texture;
     this.baseTexture = baseTextureLoader;
   }
 
-  @Override protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
+  @Override
+  protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
     try {
       BitmapImage overlay = ImageLoader.read(imageStream);
       if (overlay.width != texture.getWidth() || overlay.height != texture.getHeight()) {
@@ -70,12 +71,14 @@ public class LayeredTextureLoader extends TextureLoader {
     return true;
   }
 
-  @Override public boolean load(ZipFile texturePack, String topLevelDir) {
+  @Override
+  public boolean load(ZipFile texturePack, String topLevelDir) {
     return baseTexture.load(texturePack, topLevelDir)
         && load(topLevelDir + textureName, texturePack);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return String.format("{texture: %s, overlay: %s}", baseTexture, textureName);
   }
 }

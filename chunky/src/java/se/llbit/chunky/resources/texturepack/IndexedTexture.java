@@ -1,4 +1,5 @@
-/* Copyright (c) 2013 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2013-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2013-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,8 +17,8 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.chunky.resources.Texture;
+import se.llbit.util.BitmapImage;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,16 +46,19 @@ public class IndexedTexture extends TextureLoader {
     this.texture = texture;
   }
 
-  @Override public boolean loadFromTerrain(BitmapImage[] terrain) {
+  @Override
+  public boolean loadFromTerrain(BitmapImage[] terrain) {
     texture.setTexture(terrain[index]);
     return true;
   }
 
-  @Override public boolean load(ZipFile texturePack, String topLevelDir) {
+  @Override
+  public boolean load(ZipFile texturePack, String topLevelDir) {
     return false;
   }
 
-  @Override protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
+  @Override
+  protected boolean load(InputStream imageStream) throws IOException, TextureFormatError {
     return false;
   }
 

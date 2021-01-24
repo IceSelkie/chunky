@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.llbit.png;
+package se.llbit.util.file.image.png;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,15 +30,18 @@ public class CrcOutputStream extends OutputStream {
 
   CRC32 crc = new CRC32();
 
-  @Override public void write(int b) throws IOException {
+  @Override
+  public void write(int b) throws IOException {
     crc.update(b);
   }
 
-  @Override public void write(byte[] b, int off, int len) throws IOException {
+  @Override
+  public void write(byte[] b, int off, int len) throws IOException {
     crc.update(b, off, len);
   }
 
-  @Override public void write(byte[] b) throws IOException {
+  @Override
+  public void write(byte[] b) throws IOException {
     crc.update(b);
   }
 

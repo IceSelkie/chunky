@@ -1,4 +1,5 @@
 /* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -14,16 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.llbit.chunky.resources;
+package se.llbit.util;
 
 import org.apache.commons.math3.util.FastMath;
 
 /**
  * A container for bitmap image data in int ARGB format.
  *
- * <p>The width and height of the image are immutable, but the
- * raw pixel data is mutable. External synchronization is needed
- * if concurrent modification of pixels needs to be done.
+ * <p>
+ * The width and height of the image are immutable, but the raw pixel data is mutable. External synchronization is
+ * needed if concurrent modification of pixels needs to be done.
  */
 public class BitmapImage {
   public final int[] data;
@@ -70,8 +71,9 @@ public class BitmapImage {
 
   /**
    * Copies a region of the source bitmap into this bitmap at the given (x0, y0) position.
-   * @param x0 destination x position
-   * @param y0 destination y position
+   *
+   * @param x0  destination x position
+   * @param y0  destination y position
    * @param sx0 source x start position
    * @param sy0 source y start position
    * @param sx1 source x end position
@@ -165,6 +167,7 @@ public class BitmapImage {
 
   /**
    * Puts image A above image B and returns the result.
+   *
    * @param a Image A
    * @param b Image B
    * @return a new image with a on top of b

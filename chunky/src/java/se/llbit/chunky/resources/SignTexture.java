@@ -1,4 +1,5 @@
-/* Copyright (c) 2015 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2015-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2015-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -21,6 +22,7 @@ import se.llbit.chunky.resources.texturepack.FontTexture.Glyph;
 import se.llbit.json.JsonArray;
 import se.llbit.json.JsonValue;
 import se.llbit.math.Vector4;
+import se.llbit.util.BitmapImage;
 
 public class SignTexture extends Texture {
 

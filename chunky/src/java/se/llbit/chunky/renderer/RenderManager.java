@@ -1,4 +1,5 @@
-/* Copyright (c) 2012-2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2012-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2012-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -17,7 +18,7 @@
 package se.llbit.chunky.renderer;
 
 import se.llbit.chunky.renderer.scene.Scene;
-import se.llbit.chunky.resources.BitmapImage;
+import se.llbit.util.BitmapImage;
 import se.llbit.log.Log;
 import se.llbit.util.TaskTracker;
 
@@ -85,7 +86,7 @@ public class RenderManager extends AbstractRenderManager implements Renderer {
   /**
    * Current renderer mode.
    */
-  private RenderMode mode = RenderMode.PREVIEW;
+  private RenderState mode = RenderState.PREVIEW;
 
   private final Collection<SceneStatusListener> sceneListeners = new ArrayList<>();
 
@@ -139,7 +140,7 @@ public class RenderManager extends AbstractRenderManager implements Renderer {
             updateRenderState(scene);
             if (reason == ResetReason.SCENE_LOADED) {
               // Swap buffers so the render canvas will see the current frame.
-              bufferedScene.swapBuffers();
+              bufferedScene.render.swapBuffers();
 
               // Notify the scene listeners (this triggers a canvas repaint).
               sendSceneStatus(bufferedScene.sceneStatus());
@@ -148,7 +149,7 @@ public class RenderManager extends AbstractRenderManager implements Renderer {
         }
         initializeJobQueue();
 
-        if (mode == RenderMode.PREVIEW) {
+        if (mode == RenderState.PREVIEW) {
           previewLoop();
         } else {
           int spp, targetSpp;
@@ -205,7 +206,7 @@ public class RenderManager extends AbstractRenderManager implements Renderer {
         }
       });
 
-      if (mode == RenderMode.PAUSED || sceneProvider.pollSceneStateChange()) {
+      if (mode == RenderState.PAUSED || sceneProvider.pollSceneStateChange()) {
         return;
       }
 
@@ -213,7 +214,7 @@ public class RenderManager extends AbstractRenderManager implements Renderer {
         long frameStart = System.currentTimeMillis();
         startNextFrame();
         waitOnWorkers();
-        bufferedScene.swapBuffers();
+        bufferedScene.render.swapBuffers();
         bufferedScene.renderTime += System.currentTimeMillis() - frameStart;
       }
 
@@ -275,13 +276,13 @@ public class RenderManager extends AbstractRenderManager implements Renderer {
 
     renderTask.update("Preview", 2, 0, "");
     synchronized (bufferedScene) {
-      bufferedScene.previewCount = 2;
+      bufferedScene.render.previewCount = 2;
     }
 
     while (true) {
       int previewCount;
       synchronized (bufferedScene) {
-        previewCount = bufferedScene.previewCount;
+        previewCount = bufferedScene.render.previewCount;
       }
       if (!finalizeAllFrames || previewCount <= 0 || sceneProvider.pollSceneStateChange()) {
         return;
@@ -293,12 +294,12 @@ public class RenderManager extends AbstractRenderManager implements Renderer {
         frameStart = System.currentTimeMillis();
         startNextFrame();
         waitOnWorkers();
-        bufferedScene.swapBuffers();
+        bufferedScene.render.swapBuffers();
         sendSceneStatus(bufferedScene.sceneStatus());
         bufferedScene.renderTime += System.currentTimeMillis() - frameStart;
-        bufferedScene.previewCount -= 1;
+        bufferedScene.render.previewCount -= 1;
         bufferedScene.spp = 0;
-        progress = 2 - bufferedScene.previewCount;
+        progress = 2 - bufferedScene.render.previewCount;
         renderTime = bufferedScene.renderTime;
       }
 
@@ -381,7 +382,7 @@ public class RenderManager extends AbstractRenderManager implements Renderer {
    * Call the consumer with the current front frame buffer.
    */
   @Override public void withBufferedImage(Consumer<BitmapImage> consumer) {
-    bufferedScene.withBufferedImage(consumer);
+    bufferedScene.render.withBufferedImage(consumer);
   }
 
   @Override public void setOnRenderCompleted(BiConsumer<Long, Integer> listener) {

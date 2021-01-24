@@ -1,4 +1,5 @@
-/* Copyright (c) 2014 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2014-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2014-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -20,6 +21,7 @@ import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.renderer.ConsoleProgressListener;
 import se.llbit.chunky.renderer.RenderContext;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.chunky.renderer.scene.SceneSaver;
 import se.llbit.chunky.resources.TexturePackLoader;
 import se.llbit.json.JsonNumber;
 import se.llbit.json.JsonObject;
@@ -82,7 +84,7 @@ public class CommandLineOptions {
           "                         merge a render dump into the given scene",
           "  -help                  show this text", "", "Notes:",
           "<SCENE> can be either the path to a Scene Description File ("
-              + Scene.EXTENSION + "),",
+              + SceneSaver.EXTENSION + "),",
           "*OR* the name of a scene relative to the scene directory (excluding extension).",
           "If the scene name is an absolute path then the scene directory will be the",
           "parent directory of the Scene Description File, otherwise the scene directory",
@@ -357,7 +359,7 @@ public class CommandLineOptions {
       try {
         Scene scene = new Scene();
         try (FileInputStream in = new FileInputStream(sceneFile)) {
-          scene.loadDescription(in);
+          scene.sceneSaver.loadDescription(in);
         }
         RenderContext context = new RenderContext(new Chunky(options));
         context.setSceneDirectory(sceneFile.getParentFile());
@@ -368,13 +370,13 @@ public class CommandLineOptions {
                 // Don't report task state to progress listener.
               }
             });
-        scene.loadDump(context, taskTracker); // Load the render dump.
+        scene.sceneSaver.loadDump(context, taskTracker); // Load the render dump.
         Log.info("Original scene SPP: " + scene.spp);
         scene.mergeDump(dumpfile, taskTracker);
         Log.info("Current scene SPP: " + scene.spp);
-        scene.saveDump(context, taskTracker);
+        scene.sceneSaver.saveDump(context, taskTracker);
         try (FileOutputStream out = new FileOutputStream(sceneFile)) {
-          scene.saveDescription(out);
+          scene.sceneSaver.saveDescription(out);
         }
       } catch (IOException e) {
         Log.error("Failed to merge render dump.", e);
@@ -408,13 +410,13 @@ public class CommandLineOptions {
     }
 
     if (options.sceneName != null
-        && options.sceneName.endsWith(Scene.EXTENSION)) {
+        && options.sceneName.endsWith(SceneSaver.EXTENSION)) {
       File possibleSceneFile = new File(options.sceneName);
       if (possibleSceneFile.isFile()) {
         options.sceneDir = possibleSceneFile.getParentFile();
         String sceneName = possibleSceneFile.getName();
         options.sceneName =
-            sceneName.substring(0, sceneName.length() - Scene.EXTENSION.length());
+            sceneName.substring(0, sceneName.length() - SceneSaver.EXTENSION.length());
       }
     }
 
@@ -450,13 +452,13 @@ public class CommandLineOptions {
 
   private void printAvailableScenes() {
     System.err.println("Scene directory: " + options.sceneDir.getAbsolutePath());
-    List<File> fileList = SceneHelper.getAvailableSceneFiles(options.sceneDir);
+    List<File> fileList = SceneSaver.getAvailableSceneFiles(options.sceneDir);
     Collections.sort(fileList);
     if (!fileList.isEmpty()) {
       System.err.println("Available scenes:");
       for (File file : fileList) {
         String name = file.getName();
-        name = name.substring(0, name.length() - Scene.EXTENSION.length());
+        name = name.substring(0, name.length() - SceneSaver.EXTENSION.length());
         System.err.println("\t" + name);
       }
     } else {

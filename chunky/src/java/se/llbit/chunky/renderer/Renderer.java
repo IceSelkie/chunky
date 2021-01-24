@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2016 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -18,7 +19,7 @@
 package se.llbit.chunky.renderer;
 
 import se.llbit.chunky.renderer.scene.Scene;
-import se.llbit.chunky.resources.BitmapImage;
+import se.llbit.util.BitmapImage;
 import se.llbit.util.TaskTracker;
 
 import java.util.function.BiConsumer;

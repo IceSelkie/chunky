@@ -1,4 +1,5 @@
-/* Copyright (c) 2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -82,8 +83,7 @@ public class GeneralTab extends ScrollPane implements RenderControlsTab, Initial
   @FXML private IntegerAdjuster yMin;
   @FXML private IntegerAdjuster yMax;
 
-  private ChangeListener<String> canvasSizeListener =
-      (observable, oldValue, newValue) -> updateCanvasSize();
+  private ChangeListener<String> canvasSizeListener = (observable, oldValue, newValue) -> updateCanvasSize();
 
   private RenderController controller;
   private WorldMapLoader mapLoader;
@@ -144,7 +144,7 @@ public class GeneralTab extends ScrollPane implements RenderControlsTab, Initial
         String text = result.get();
         try (JsonParser parser = new JsonParser(new ByteArrayInputStream(text.getBytes()))) {
           JsonObject json = parser.parse().object();
-          scene.importFromJson(json);
+          scene.sceneSaver.importFromJson(json);
         } catch (IOException e) {
           Log.warn("Failed to import scene settings.");
         } catch (JsonParser.SyntaxError syntaxError) {

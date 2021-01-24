@@ -1,4 +1,5 @@
-/* Copyright (c) 2013 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2013-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2013-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,15 +17,14 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import se.llbit.chunky.resources.BitmapImage;
+import se.llbit.util.BitmapImage;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipFile;
 
 /**
- * An alternate texture will try loading several textures,
- * and only fail if none of them could be loaded.
+ * An alternate texture will try loading several textures, and only fail if none of them could be loaded.
  *
  * @author Jesper Öqvist <jesper@llbit.se>
  */
@@ -49,7 +49,8 @@ public class AlternateTextures extends TextureLoader {
         "It is pointless to create an alternative texture loader with only one alternative.");
   }
 
-  @Override public boolean load(ZipFile texturePack, String topLevelDir) {
+  @Override
+  public boolean load(ZipFile texturePack, String topLevelDir) {
     for (TextureLoader alternative : alternatives) {
       if (alternative.load(texturePack, topLevelDir)) {
         return true;
@@ -58,7 +59,8 @@ public class AlternateTextures extends TextureLoader {
     return false;
   }
 
-  @Override public boolean loadFromTerrain(BitmapImage[] terrain) {
+  @Override
+  public boolean loadFromTerrain(BitmapImage[] terrain) {
     for (TextureLoader alternative : alternatives) {
       if (alternative.loadFromTerrain(terrain)) {
         return true;
@@ -67,7 +69,8 @@ public class AlternateTextures extends TextureLoader {
     return false;
   }
 
-  @Override protected boolean load(InputStream imageStream) throws IOException {
+  @Override
+  protected boolean load(InputStream imageStream) throws IOException {
     throw new UnsupportedOperationException("Call load(ZipFile) instead!");
   }
 

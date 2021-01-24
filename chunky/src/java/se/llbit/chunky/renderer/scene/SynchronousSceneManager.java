@@ -1,4 +1,5 @@
-/* Copyright (c) 2016 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2016-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -18,7 +19,7 @@ package se.llbit.chunky.renderer.scene;
 
 import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.renderer.RenderContext;
-import se.llbit.chunky.renderer.RenderMode;
+import se.llbit.chunky.renderer.RenderState;
 import se.llbit.chunky.renderer.RenderStatus;
 import se.llbit.chunky.renderer.Renderer;
 import se.llbit.chunky.renderer.ResetReason;
@@ -120,14 +121,14 @@ public class SynchronousSceneManager implements SceneProvider, SceneManager {
         }
 
         // Create backup of scene description and current render dump.
-        storedScene.backupFile(context, context.getSceneDescriptionFile(sceneName));
-        storedScene.backupFile(context, new File(sceneDir, sceneName + ".dump"));
+        storedScene.sceneSaver.backupFile(context, context.getSceneDescriptionFile(sceneName));
+        storedScene.sceneSaver.backupFile(context, new File(sceneDir, sceneName + ".dump"));
 
         // Copy render status over from the renderer.
         RenderStatus status = renderer.getRenderStatus();
         storedScene.renderTime = status.getRenderTime();
         storedScene.spp = status.getSpp();
-        storedScene.saveScene(context, taskTracker);
+        storedScene.sceneSaver.saveScene(context, taskTracker);
         Log.info("Scene saved");
       }
     } catch (IOException e) {
@@ -143,7 +144,7 @@ public class SynchronousSceneManager implements SceneProvider, SceneManager {
     synchronized (scene) {
       try (TaskTracker.Task ignored = taskTracker.task("Loading scene", 1)) {
         context.setSceneDirectory(resolveSceneDirectory(sceneName));
-        scene.loadScene(context, sceneName, taskTracker);
+        scene.sceneSaver.loadScene(context, sceneName, taskTracker);
       }
 
       // Update progress bar.
@@ -165,7 +166,7 @@ public class SynchronousSceneManager implements SceneProvider, SceneManager {
       context.setSceneDirectory(resolveSceneDirectory(scene.name));
       scene.refresh();
       scene.setResetReason(ResetReason.SCENE_LOADED);
-      scene.setRenderMode(RenderMode.PREVIEW);
+      scene.setRenderMode(RenderState.PREVIEW);
     }
     onSceneLoaded.run();
   }
@@ -180,7 +181,7 @@ public class SynchronousSceneManager implements SceneProvider, SceneManager {
       }
       scene.refresh();
       scene.setResetReason(ResetReason.SCENE_LOADED);
-      scene.setRenderMode(RenderMode.PREVIEW);
+      scene.setRenderMode(RenderState.PREVIEW);
     }
     onChunksLoaded.run();
   }
@@ -190,7 +191,7 @@ public class SynchronousSceneManager implements SceneProvider, SceneManager {
       scene.reloadChunks(taskTracker);
       scene.refresh();
       scene.setResetReason(ResetReason.SCENE_LOADED);
-      scene.setRenderMode(RenderMode.PREVIEW);
+      scene.setRenderMode(RenderState.PREVIEW);
     }
     onChunksLoaded.run();
   }
@@ -306,12 +307,12 @@ public class SynchronousSceneManager implements SceneProvider, SceneManager {
 
     if (!defaultDirectory.exists()) {
 
-      File descFile = new File(PersistentSettings.getSceneDirectory(), sceneName + Scene.EXTENSION);
+      File descFile = new File(PersistentSettings.getSceneDirectory(), sceneName + SceneSaver.EXTENSION);
       if (descFile.exists()) {
         return PersistentSettings.getSceneDirectory();
       }
 
-      descFile = new File(PersistentSettings.getSceneDirectory() + File.separator + sceneName, sceneName + Scene.EXTENSION);
+      descFile = new File(PersistentSettings.getSceneDirectory() + File.separator + sceneName, sceneName + SceneSaver.EXTENSION);
       if (descFile.exists()) {
         return descFile.getParentFile();
       }

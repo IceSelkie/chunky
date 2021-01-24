@@ -1,4 +1,5 @@
-/* Copyright (c) 2015 Jesper Öqvist <jesper@llbit.se>
+/* Copyright (c) 2015-2021 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2015-2021 Chunky contributors
  *
  * This file is part of Chunky.
  *
@@ -16,12 +17,6 @@
  */
 package se.llbit.chunky.resources.texturepack;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.chunky.resources.Texture;
 import se.llbit.chunky.resources.texturepack.FontTexture.Glyph;
 import se.llbit.json.JsonArray;
@@ -29,7 +24,14 @@ import se.llbit.json.JsonParser;
 import se.llbit.json.JsonParser.SyntaxError;
 import se.llbit.json.JsonValue;
 import se.llbit.log.Log;
-import se.llbit.resources.ImageLoader;
+import se.llbit.util.BitmapImage;
+import se.llbit.util.file.ImageLoader;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /** @author Jesper Öqvist <jesper@llbit.se> */
 public class JsonFontTextureLoader extends TextureLoader {
@@ -72,8 +74,7 @@ public class JsonFontTextureLoader extends TextureLoader {
 
       BitmapImage spritemap;
       String texture = fontDefinition.asObject().get("file").stringValue("").split(":")[1];
-      try (InputStream imageStream =
-          texturePack.getInputStream(
+      try (InputStream imageStream = texturePack.getInputStream(
               new ZipEntry(topLevelDir + "assets/minecraft/textures/" + texture))) {
         if (imageStream == null) {
           Log.error("Could not load font texture " + texture);

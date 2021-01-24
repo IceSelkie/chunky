@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.llbit.resources;
+package se.llbit.util.file;
 
-import se.llbit.chunky.resources.BitmapImage;
 import se.llbit.log.Log;
+import se.llbit.util.BitmapImage;
 
 import javax.imageio.ImageIO;
 import java.awt.Graphics;
@@ -55,8 +55,7 @@ public final class ImageLoader {
   }
 
   /**
-   * Attempt to load an image with the given resource name.
-   * If no image is found for that resource name the default
+   * Attempt to load an image with the given resource name. If no image is found for that resource name the default
    * missing image is returned.
    *
    * @return Image for the given resource name
@@ -110,5 +109,4 @@ public final class ImageLoader {
     System.arraycopy(data, 0, bitmap.data, 0, width * height);
     return bitmap;
   }
-
 }

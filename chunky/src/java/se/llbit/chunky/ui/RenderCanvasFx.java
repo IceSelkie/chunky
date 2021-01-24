@@ -40,7 +40,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.PopupWindow;
-import se.llbit.chunky.renderer.RenderMode;
+import se.llbit.chunky.renderer.RenderState;
 import se.llbit.chunky.renderer.RenderStatusListener;
 import se.llbit.chunky.renderer.Renderer;
 import se.llbit.chunky.renderer.Repaintable;
@@ -69,8 +69,8 @@ public class RenderCanvasFx extends ScrollPane implements Repaintable, SceneStat
   private final Renderer renderer;
   private int lastX;
   private int lastY;
-  private Vector2 target = new Vector2(0, 0);
-  private Tooltip tooltip = new Tooltip();
+  private final Vector2 target = new Vector2(0, 0);
+  private final Tooltip tooltip = new Tooltip();
 
   private RenderStatusListener renderListener;
 
@@ -152,7 +152,7 @@ public class RenderCanvasFx extends ScrollPane implements Repaintable, SceneStat
     MenuItem setTarget = new MenuItem("Set target");
     setTarget.setOnAction(e -> {
       scene.camera().setTarget(target.x, target.y);
-      if (scene.getMode() == RenderMode.PREVIEW) {
+      if (scene.getMode() == RenderState.PREVIEW) {
         scene.forceReset();
       }
     });
@@ -166,7 +166,7 @@ public class RenderCanvasFx extends ScrollPane implements Repaintable, SceneStat
     });
     Menu canvasScale = new Menu("Canvas scale");
     ToggleGroup scaleGroup = new ToggleGroup();
-    for (int percent : new int[] { 25, 50, 75, 100, 150, 200, 300, 400 }) {
+    for (int percent : new int[]{25, 50, 75, 100, 150, 200, 300, 400}) {
       RadioMenuItem item = new RadioMenuItem(String.format("%d%%", percent));
       item.setToggleGroup(scaleGroup);
       if (percent == 100) {
@@ -258,7 +258,7 @@ public class RenderCanvasFx extends ScrollPane implements Repaintable, SceneStat
           break;
         case SPACE:
           synchronized (renderScene) {
-            if (renderScene.getMode() == RenderMode.RENDERING) {
+            if (renderScene.getMode() == RenderState.RENDERING) {
               renderScene.pauseRender();
             } else {
               renderScene.startRender();
@@ -285,7 +285,8 @@ public class RenderCanvasFx extends ScrollPane implements Repaintable, SceneStat
     guideGroup.setScaleY(scale);
   }
 
-  @Override public void repaint() {
+  @Override
+  public void repaint() {
     if (painting.compareAndSet(false, true)) {
       forceRepaint();
     }
@@ -311,7 +312,8 @@ public class RenderCanvasFx extends ScrollPane implements Repaintable, SceneStat
     this.renderListener = renderListener;
   }
 
-  @Override public void sceneStatus(String status) {
+  @Override
+  public void sceneStatus(String status) {
     Platform.runLater(() -> {
       Point2D offset = localToScene(0, 0);
       tooltip.setText(status);
