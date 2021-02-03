@@ -102,11 +102,15 @@ public class RenderWorker extends Thread {
     Random random = state.random;
     Ray ray = state.ray;
 
-    int width = scene.canvasWidth();
-    int height = scene.canvasHeight();
+    int width = scene.canvasSubsectionWidth();
+    int height = scene.canvasSubsectionHeight();
 
     double halfWidth = width / (2.0 * height);
     double invHeight = 1.0 / height;
+
+    double os = scene.canvasSubsectionScale();//.5;           // offset scale
+    double ow = scene.canvasSubsectionOffsetX();//-halfWidth; // offset width
+    double oh = scene.canvasSubsectionOffsetY();//-0.5;       // offset height
 
     double[] samples = scene.getSampleBuffer();
     final Camera cam = scene.camera();
@@ -121,11 +125,14 @@ public class RenderWorker extends Thread {
           double sb = 0;
 
           for (int i = 0; i < manager.sppPerPass; ++i) {
-            double oy = random.nextDouble();
-            double ox = random.nextDouble();
+            double pvx = random.nextDouble(); // pixel variation: x
+            double pvy = random.nextDouble(); // pixel variation: y
 
-            cam.calcViewRay(ray, random, (-halfWidth + (x + ox) * invHeight),
-                (-.5 + (y + oy) * invHeight));
+            double vx = (-halfWidth + (x + pvx) * invHeight); // view x
+            double vy = -.5 + (y + pvy) * invHeight;          // view y
+            vx = (vx+ow)*os;
+            vy = (vy+oh)*os;
+            cam.calcViewRay(ray, random, vx, vy);
 
             scene.rayTrace(rayTracer, state);
 
@@ -133,10 +140,10 @@ public class RenderWorker extends Thread {
             sg += ray.color.y;
             sb += ray.color.z;
           }
-          double sinv = 1.0 / (scene.spp + manager.sppPerPass);
-          samples[offset + 0] = (samples[offset + 0] * scene.spp + sr) * sinv;
-          samples[offset + 1] = (samples[offset + 1] * scene.spp + sg) * sinv;
-          samples[offset + 2] = (samples[offset + 2] * scene.spp + sb) * sinv;
+          double sppinv = 1.0 / (scene.spp + manager.sppPerPass);
+          samples[offset + 0] = (samples[offset + 0] * scene.spp + sr) * sppinv;
+          samples[offset + 1] = (samples[offset + 1] * scene.spp + sg) * sppinv;
+          samples[offset + 2] = (samples[offset + 2] * scene.spp + sb) * sppinv;
 
           if (scene.shouldFinalizeBuffer()) {
             scene.finalizePixel(x, y);

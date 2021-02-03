@@ -157,12 +157,12 @@ public class Scene implements JsonSerializable, Refreshable {
   /**
    * Canvas width.
    */
-  public int width;
+  private int widthp;
 
   /**
    * Canvas height.
    */
-  public int height;
+  private int heightp;
 
   public Postprocess postprocess = Postprocess.DEFAULT;
   public OutputMode outputMode = OutputMode.DEFAULT;
@@ -246,7 +246,7 @@ public class Scene implements JsonSerializable, Refreshable {
    */
   private Collection<Entity> actors = new LinkedList<>();
 
-  /** Poseable entities in the scene. */
+  /** Poseable players in the scene. */
   private Map<PlayerEntity, JsonObject> profiles = new HashMap<>();
 
   /** Material properties for this scene. */
@@ -258,6 +258,7 @@ public class Scene implements JsonSerializable, Refreshable {
   /** Upper Y clip plane. */
   public int yClipMax = PersistentSettings.getYClipMax();
 
+  /** BoundingVolumeHierarchy, analogous to octree, but for entities and actors. */
   private BVH bvh = new BVH(Collections.emptyList());
   private BVH actorBvh = new BVH(Collections.emptyList());
 
@@ -271,9 +272,9 @@ public class Scene implements JsonSerializable, Refreshable {
   private WorldTexture waterTexture = new WorldTexture();
 
   /** This is the 8-bit channel frame buffer. */
-  protected BitmapImage frontBuffer;
+  protected BitmapImage previewDoubleBufferFrontShow;
 
-  private BitmapImage backBuffer;
+  private BitmapImage previewDoubleBufferBackStaging;
 
   /**
    * HDR sample buffer for the render output.
@@ -287,7 +288,7 @@ public class Scene implements JsonSerializable, Refreshable {
    * should really be moved somewhere else and not be so tightly
    * coupled to the scene settings.
    */
-  protected double[] samples;
+  protected double[] sampleBuffer;
 
   private byte[] alphaChannel;
 
@@ -316,8 +317,8 @@ public class Scene implements JsonSerializable, Refreshable {
    * fromJson(), or importFromJson(), or by calling initBuffers().
    */
   public Scene() {
-    width = PersistentSettings.get3DCanvasWidth();
-    height = PersistentSettings.get3DCanvasHeight();
+    widthp = PersistentSettings.get3DCanvasWidth();
+    heightp = PersistentSettings.get3DCanvasHeight();
     sppTarget = PersistentSettings.getSppTargetDefault();
 
     palette = new BlockPalette();
@@ -356,10 +357,10 @@ public class Scene implements JsonSerializable, Refreshable {
    * scene and after scene canvas size changes.
    */
   public synchronized void initBuffers() {
-    frontBuffer = new BitmapImage(width, height);
-    backBuffer = new BitmapImage(width, height);
+    previewDoubleBufferFrontShow = new BitmapImage(width, height);
+    previewDoubleBufferBackStaging = new BitmapImage(width, height);
     alphaChannel = new byte[width * height];
-    samples = new double[width * height * 3];
+    sampleBuffer = new double[width * height * 3];
   }
 
   /**
@@ -435,13 +436,13 @@ public class Scene implements JsonSerializable, Refreshable {
 
     finalized = false;
 
-    if (samples != other.samples) {
+    if (sampleBuffer != other.sampleBuffer) {
       width = other.width;
       height = other.height;
-      backBuffer = other.backBuffer;
-      frontBuffer = other.frontBuffer;
+      previewDoubleBufferBackStaging = other.previewDoubleBufferBackStaging;
+      previewDoubleBufferFrontShow = other.previewDoubleBufferFrontShow;
       alphaChannel = other.alphaChannel;
-      samples = other.samples;
+      sampleBuffer = other.sampleBuffer;
     }
 
     octreeImplementation = other.octreeImplementation;
@@ -1689,6 +1690,38 @@ public class Scene implements JsonSerializable, Refreshable {
     return height;
   }
 
+  // 0 1 2 3
+  // 4 5 6 7
+  // 8 9 0 1
+  int tileId = 0;
+  int subsectionWidth = 256;
+  int subsectionHeight = 256;
+  public int canvasSubsectionWidth() {
+    return (tileId+1)%canvasSubsectionCountX()==0?canvasWidth()%subsectionWidth:subsectionWidth;
+  }
+  public int canvasSubsectionHeight() {
+    return tileId/canvasSubsectionCountX()==canvasSubsectionCountY()-1?canvasHeight()%subsectionHeight:subsectionHeight;
+  }
+  public double canvasSubsectionScale() {
+    return ((double)canvasSubsectionHeight())/canvasHeight();
+  }
+  public int canvasSubsectionCount() {
+    return canvasSubsectionCountX()*canvasSubsectionCountY();
+  }
+  public int canvasSubsectionCountX() {
+    return canvasWidth()/subsectionWidth+(canvasWidth()%subsectionWidth>0?1:0);
+  }
+  public int canvasSubsectionCountY() {
+    return canvasHeight()/subsectionHeight+(canvasHeight()%subsectionHeight>0?1:0);
+  }
+
+  public int canvasSubsectionOffsetX() {
+    return tileId%canvasSubsectionCountX()*subsectionWidth;
+  }
+  public int canvasSubsectionOffsetY() {
+    return tileId/canvasSubsectionCountX()*subsectionHeight;
+  }
+
   /**
    * Save a snapshot
    */
@@ -1835,9 +1868,9 @@ public class Scene implements JsonSerializable, Refreshable {
     try (TaskTracker.Task task = progress.task("Writing PNG");
         PngFileWriter writer = new PngFileWriter(out)) {
       if (transparentSky) {
-        writer.write(backBuffer.data, alphaChannel, width, height, task);
+        writer.write(previewDoubleBufferBackStaging.data, alphaChannel, width, height, task);
       } else {
-        writer.write(backBuffer.data, width, height, task);
+        writer.write(previewDoubleBufferBackStaging.data, width, height, task);
       }
       if (camera.getProjectionMode() == ProjectionMode.PANORAMIC
           && camera.getFov() >= 179
@@ -1947,7 +1980,7 @@ public class Scene implements JsonSerializable, Refreshable {
         dataOutput.writeInt(height);
         dataOutput.writeInt(spp);
         dataOutput.writeLong(renderTime);
-        FloatingPointCompressor.compress(samples, out);
+        FloatingPointCompressor.compress(sampleBuffer, out);
       } catch(IOException e) {
         Log.warn("IO exception while saving render dump!", e);
       }
@@ -2052,7 +2085,7 @@ public class Scene implements JsonSerializable, Refreshable {
             spp = dataInput.readInt();
             renderTime = dataInput.readLong();
 
-            FloatingPointCompressor.decompress(input, samples);
+            FloatingPointCompressor.decompress(input, sampleBuffer);
           }
         }
       } else {
@@ -2074,9 +2107,9 @@ public class Scene implements JsonSerializable, Refreshable {
           for (int x = 0; x < width; ++x) {
             task.update(width, x + 1);
             for (int y = 0; y < height; ++y) {
-              samples[(y * width + x) * 3 + 0] = in.readDouble();
-              samples[(y * width + x) * 3 + 1] = in.readDouble();
-              samples[(y * width + x) * 3 + 2] = in.readDouble();
+              sampleBuffer[(y * width + x) * 3 + 0] = in.readDouble();
+              sampleBuffer[(y * width + x) * 3 + 1] = in.readDouble();
+              sampleBuffer[(y * width + x) * 3 + 2] = in.readDouble();
               finalizePixel(x, y);
             }
           }
@@ -2100,7 +2133,7 @@ public class Scene implements JsonSerializable, Refreshable {
     finalized = true;
     double[] result = new double[3];
     postProcessPixel(x, y, result);
-    backBuffer.data[y * width + x] = ColorUtil
+    previewDoubleBufferBackStaging.data[y * width + x] = ColorUtil
         .getRGB(QuickMath.min(1, result[0]), QuickMath.min(1, result[1]),
             QuickMath.min(1, result[2]));
   }
@@ -2111,9 +2144,9 @@ public class Scene implements JsonSerializable, Refreshable {
    * @param result the resulting color values are written to this array
    */
   public void postProcessPixel(int x, int y, double[] result) {
-    double r = samples[(y * width + x) * 3 + 0];
-    double g = samples[(y * width + x) * 3 + 1];
-    double b = samples[(y * width + x) * 3 + 2];
+    double r = sampleBuffer[(y * width + x) * 3 + 0];
+    double g = sampleBuffer[(y * width + x) * 3 + 1];
+    double b = sampleBuffer[(y * width + x) * 3 + 2];
 
     r *= exposure;
     g *= exposure;
@@ -2234,7 +2267,7 @@ public class Scene implements JsonSerializable, Refreshable {
    * Copies a pixel in-buffer.
    */
   public void copyPixel(int jobId, int offset) {
-    backBuffer.data[jobId + offset] = backBuffer.data[jobId];
+    previewDoubleBufferBackStaging.data[jobId + offset] = previewDoubleBufferBackStaging.data[jobId];
   }
 
   /**
@@ -2273,17 +2306,17 @@ public class Scene implements JsonSerializable, Refreshable {
    */
   public synchronized void swapBuffers() {
     finalized = false;
-    BitmapImage tmp = frontBuffer;
-    frontBuffer = backBuffer;
-    backBuffer = tmp;
+    BitmapImage tmp = previewDoubleBufferFrontShow;
+    previewDoubleBufferFrontShow = previewDoubleBufferBackStaging;
+    previewDoubleBufferBackStaging = tmp;
   }
 
   /**
    * Call the consumer with the current front frame buffer.
    */
   public synchronized void withBufferedImage(Consumer<BitmapImage> consumer) {
-    if (frontBuffer != null) {
-      consumer.accept(frontBuffer);
+    if (previewDoubleBufferFrontShow != null) {
+      consumer.accept(previewDoubleBufferFrontShow);
     }
   }
 
@@ -2293,7 +2326,7 @@ public class Scene implements JsonSerializable, Refreshable {
    * @return The sample buffer for this scene
    */
   public double[] getSampleBuffer() {
-    return samples;
+    return sampleBuffer;
   }
 
   /**
@@ -2380,12 +2413,12 @@ public class Scene implements JsonSerializable, Refreshable {
       for (int x = 0; x < width; ++x) {
         task.update(width, x + 1);
         for (int y = 0; y < height; ++y) {
-          samples[(y * width + x) * 3 + 0] =
-              samples[(y * width + x) * 3 + 0] * sa + in.readDouble() * sb;
-          samples[(y * width + x) * 3 + 1] =
-              samples[(y * width + x) * 3 + 1] * sa + in.readDouble() * sb;
-          samples[(y * width + x) * 3 + 2] =
-              samples[(y * width + x) * 3 + 2] * sa + in.readDouble() * sb;
+          sampleBuffer[(y * width + x) * 3 + 0] =
+              sampleBuffer[(y * width + x) * 3 + 0] * sa + in.readDouble() * sb;
+          sampleBuffer[(y * width + x) * 3 + 1] =
+              sampleBuffer[(y * width + x) * 3 + 1] * sa + in.readDouble() * sb;
+          sampleBuffer[(y * width + x) * 3 + 2] =
+              sampleBuffer[(y * width + x) * 3 + 2] * sa + in.readDouble() * sb;
           finalizePixel(x, y);
         }
       }
@@ -2738,7 +2771,7 @@ public class Scene implements JsonSerializable, Refreshable {
 
     int newWidth = json.get("width").intValue(width);
     int newHeight = json.get("height").intValue(height);
-    if (width != newWidth || height != newHeight || samples == null) {
+    if (width != newWidth || height != newHeight || sampleBuffer == null) {
       width = newWidth;
       height = newHeight;
       initBuffers();

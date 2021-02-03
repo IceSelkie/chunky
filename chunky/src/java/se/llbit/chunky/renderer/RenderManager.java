@@ -321,8 +321,8 @@ public class RenderManager extends AbstractRenderManager implements Renderer {
    * Assign render jobs to tiles of the canvas.
    */
   private void initializeJobQueue() {
-    int canvasWidth = bufferedScene.canvasWidth();
-    int canvasHeight = bufferedScene.canvasHeight();
+    int canvasWidth = bufferedScene.canvasSubsectionWidth();
+    int canvasHeight = bufferedScene.canvasSubsectionHeight();
     numJobs = ((canvasWidth + (tileWidth - 1)) / tileWidth)
         * ((canvasHeight + (tileWidth - 1)) / tileWidth);
     if (tileQueue.length != numJobs) {
