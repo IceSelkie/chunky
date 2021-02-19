@@ -20,9 +20,13 @@ import se.llbit.chunky.renderer.scene.SampleBuffer;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.function.LongConsumer;
 
 /**
@@ -152,91 +156,140 @@ public class FloatingPointCompressor {
     }
   }
 
+
+
   public static void compress(SampleBuffer input, OutputStream output, LongConsumer pixelProgress) throws IOException {
-    try (BufferedOutputStream out = new BufferedOutputStream(output)) {
-      long size = input.numberOfPixels() - 1;
-      EncoderDecoder rEncoder = new EncoderDecoder();
-      EncoderDecoder gEncoder = new EncoderDecoder();
-      EncoderDecoder bEncoder = new EncoderDecoder();
+    try (CompressionStream compressionStream = new CompressionStream(input.numberOfPixels(), output)) {
+      for (int y = 0; y < input.width; y++)
+        for (int x = 0; x < input.height; x++) {
+          compressionStream.writePixel(input, x, y);
+          pixelProgress.accept((long) x * input.width + y);
+        }
+    }
+  }
 
-      for (int i = 0; i < size; i += 2) {
-        int idx = 3 * i;
-        rEncoder.encodePair(input.get(idx+0), input.get(idx+3), out);
-        gEncoder.encodePair(input.get(idx+1), input.get(idx+4), out);
-        bEncoder.encodePair(input.get(idx+2), input.get(idx+5), out);
-        pixelProgress.accept(i);
+  public static class CompressionStream implements Closeable {
+    final BufferedOutputStream out;
+    final long expectedPixels;
+    long index;
+    final EncoderDecoder r, g, b;
+    final LinkedList<Double> queue;
+
+    public CompressionStream(long pixelCount, OutputStream output) {
+      this.out = new BufferedOutputStream(output);
+      this.expectedPixels = pixelCount;
+      this.index = 0;
+      this.r = new EncoderDecoder();
+      this.g = new EncoderDecoder();
+      this.b = new EncoderDecoder();
+      queue = new LinkedList<>();
+    }
+
+    public void writePixel(SampleBuffer input, int x, int y) throws IOException {
+      if (++index > expectedPixels)
+        throw new IllegalStateException("Stream already completed. (Received " + index + " of " + expectedPixels + " expected values.)");
+
+//      if (queue.size() == 3) {
+//        r.encodePair(queue.removeFirst(), input.get(x, y, 0), out);
+//        g.encodePair(queue.removeFirst(), input.get(x, y, 1), out);
+//        b.encodePair(queue.removeFirst(), input.get(x, y, 2), out);
+//      } else {
+//        queue.addLast(input.get(x, y, 0));
+//        queue.addLast(input.get(x, y, 1));
+//        queue.addLast(input.get(x, y, 2));
+//      }
+
+      DataOutputStream ds = new DataOutputStream(out);
+      ds.writeDouble(input.get(x,y,0));
+      ds.writeDouble(input.get(x,y,1));
+      ds.writeDouble(input.get(x,y,2));
+//      ds.flush();
+    }
+
+    public void close() throws IOException {
+      try {
+        if (queue.size() == 3) {
+          r.encodeSingleWithOddTerminator(queue.removeFirst(), out);
+          g.encodeSingleWithOddTerminator(queue.removeFirst(), out);
+          b.encodeSingleWithOddTerminator(queue.removeFirst(), out);
+        }
+      } catch (IOException e) {
+        out.close();
+        throw e;
       }
 
-      // Add the last one and a special terminator if there is an odd number
-      if (input.numberOfPixels() % 2 == 1) {
-        long idx = 3 * size;
-        rEncoder.encodeSingleWithOddTerminator(input.get(idx + 0), out);
-        gEncoder.encodeSingleWithOddTerminator(input.get(idx + 1), out);
-        bEncoder.encodeSingleWithOddTerminator(input.get(idx + 2), out);
-        pixelProgress.accept(size);
+      if (expectedPixels != index)
+        throw new IllegalStateException("Stream not yet completed. Only received " + index + " of " + expectedPixels + " expected values.");
+
+      if (queue.size() != 0)
+        throw new IllegalStateException("Compression queue has " + queue.size() + " unexpected values left.");
+      out.close();
+    }
+  }
+
+  public static class DecompressionStream implements Closeable {
+    final BufferedInputStream in;
+    final long expectedPixels;
+    long index;
+    final EncoderDecoder r, g, b;
+    final double[] cache;
+    boolean hasQueued = false;
+
+    public DecompressionStream(long expectedPixels, InputStream input) {
+      this.in = new BufferedInputStream(input);
+      this.expectedPixels = expectedPixels;
+      this.index = 0;
+      this.r = new EncoderDecoder();
+      this.g = new EncoderDecoder();
+      this.b = new EncoderDecoder();
+      cache = new double[6];
+    }
+
+    public void readPixel(SampleBuffer output, int x, int y) throws IOException {
+      int idx = readPixel();
+      output.setPixel(x, y, cache[idx + 0], cache[idx + 1], cache[idx + 2]);
+    }
+
+    private int readPixel() throws IOException {
+      if (++index > expectedPixels)
+        throw new IllegalStateException("Stream already completed. (Requesting " + index + " of " + expectedPixels + " expected values.)");
+      if (hasQueued) {
+        hasQueued = false;
+        return 3;
       }
+      readPair(r, 0);
+      readPair(g, 1);
+      readPair(b, 2);
+      hasQueued = (index != expectedPixels);
+      return 0;
+    }
+
+    public void close() throws IOException {
+      in.close();
+      if (expectedPixels != index)
+        System.err.println("Not done yet! (only at "+index+" of "+expectedPixels+")");
+      if (hasQueued)
+        throw new IllegalStateException("Decompression queue has unexpected extra value.");
+    }
+
+    private void readPair(EncoderDecoder decoder, int offset) throws IOException {
+      byte groupedHeader = (byte) in.read();
+      byte firstHeader = (byte) ((groupedHeader >>> 4) & 0x0F);
+      byte secondHeader = (byte) (groupedHeader & 0x0F);
+      cache[offset] = decoder.decodeSingle(firstHeader, in);
+      cache[offset + 3] = decoder.decodeSingle(secondHeader, in);
     }
   }
 
   public static void decompress(InputStream input, long bufferLength, PixelConsumer consumer, LongConsumer pixelProgress)
       throws IOException {
-    try (BufferedInputStream in = new BufferedInputStream(input)) {
-      if (bufferLength % 3 != 0)
-        throw new IllegalArgumentException("Dump doesn't have a multiple of 3 values");
-
-      long pixels = bufferLength / 3;
-      long size = pixels - 1;
-
-      EncoderDecoder rDecoder = new EncoderDecoder();
-      EncoderDecoder gDecoder = new EncoderDecoder();
-      EncoderDecoder bDecoder = new EncoderDecoder();
-
-      for (int i = 0; i < size; i += 2) {
-        byte rGroupedHeader = (byte) in.read();
-        byte rFirstHeader = (byte) ((rGroupedHeader >>> 4) & 0x0F);
-        byte rSecondHeader = (byte) (rGroupedHeader & 0x0F);
-        double r1 = rDecoder.decodeSingle(rFirstHeader, in);
-        double r2 = rDecoder.decodeSingle(rSecondHeader, in);
-
-        byte gGroupedHeader = (byte) in.read();
-        byte gFirstHeader = (byte) ((gGroupedHeader >>> 4) & 0x0F);
-        byte gSecondHeader = (byte) (gGroupedHeader & 0x0F);
-        double g1 = gDecoder.decodeSingle(gFirstHeader, in);
-        double g2 = gDecoder.decodeSingle(gSecondHeader, in);
-
-        byte bGroupedHeader = (byte) in.read();
-        byte bFirstHeader = (byte) ((bGroupedHeader >>> 4) & 0x0F);
-        byte bSecondHeader = (byte) (bGroupedHeader & 0x0F);
-        double b1 = bDecoder.decodeSingle(bFirstHeader, in);
-        double b2 = bDecoder.decodeSingle(bSecondHeader, in);
-
-        consumer.consume(i, r1, g1, b1);
-        consumer.consume(i + 1, r2, g2, b2);
+    int idx;
+    try (DecompressionStream decompressor = new DecompressionStream(bufferLength / 3, input)) {
+      double[] p = decompressor.cache;
+      for (long i = 0; i < bufferLength; i++) {
+        idx = decompressor.readPixel();
+        consumer.consume(i, p[idx + 0], p[idx + 1], p[idx + 2]);
         pixelProgress.accept(i);
-      }
-
-      // Add the last one and a special terminator if there is an odd number
-      if (pixels % 2 == 1) {
-        byte rGroupedHeader = (byte) in.read();
-        byte rFirstHeader = (byte) ((rGroupedHeader >>> 4) & 0x0F);
-        byte rSecondHeader = (byte) (rGroupedHeader & 0x0F);
-        double r = rDecoder.decodeSingle(rFirstHeader, in);
-        rDecoder.decodeSingle(rSecondHeader, in); // discard
-
-        byte gGroupedHeader = (byte) in.read();
-        byte gFirstHeader = (byte) ((gGroupedHeader >>> 4) & 0x0F);
-        byte gSecondHeader = (byte) (gGroupedHeader & 0x0F);
-        double g = gDecoder.decodeSingle(gFirstHeader, in);
-        gDecoder.decodeSingle(gSecondHeader, in); // discard
-
-        byte bGroupedHeader = (byte) in.read();
-        byte bFirstHeader = (byte) ((bGroupedHeader >>> 4) & 0x0F);
-        byte bSecondHeader = (byte) (bGroupedHeader & 0x0F);
-        double b = bDecoder.decodeSingle(bFirstHeader, in);
-        bDecoder.decodeSingle(bSecondHeader, in); // discard
-
-        consumer.consume(size, r, g, b);
-        pixelProgress.accept(size);
       }
     }
   }

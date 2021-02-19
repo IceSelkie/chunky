@@ -16,6 +16,7 @@
  */
 package se.llbit.chunky.renderer.renderdump;
 
+import java.util.function.BiConsumer;
 import java.util.function.LongConsumer;
 import se.llbit.chunky.renderer.scene.SampleBuffer;
 import se.llbit.chunky.renderer.scene.Scene;
@@ -73,6 +74,21 @@ abstract class DumpFormat {
     readSamples(inputStream, scene, px, pixelProgress);
   }
 
+//  protected void readSpp(DataInputStream inputStream, Scene scene, LongConsumer pixelProgress) throws IOException {
+//    SampleBuffer buffer = scene.getSampleBuffer();
+//    readSpp(inputStream, scene, buffer::setSpp, pixelProgress);
+//  }
+//
+//  protected void readSpp(DataInputStream inputStream,
+//                         Scene scene,
+//                         BiConsumer<Long, Integer> sppConsumer,
+//                         LongConsumer pixelProgress)
+//      throws IOException {
+//    throw new IllegalStateException("This dump format has not implemented an SPP processor.");
+//  }
+//
+//
+//
   public void merge(DataInputStream inputStream, Scene scene, TaskTracker taskTracker)
       throws IOException, IllegalStateException {
     try (TaskTracker.Task task = taskTracker.task("Merging render dump", scene.renderWidth() * scene.renderHeight())) {
@@ -118,7 +134,7 @@ abstract class DumpFormat {
   protected abstract void writeSamples(DataOutputStream outputStream, Scene scene, LongConsumer pixelProgress)
       throws IOException;
 
-  private void updateTask(TaskTracker.Task task, Scene scene, long pixelProgress) {
+  protected void updateTask(TaskTracker.Task task, Scene scene, long pixelProgress) {
 
     if (((long)scene.renderWidth()) * scene.renderHeight() <= Integer.MAX_VALUE) {
       int x = scene.renderWidth() * scene.renderHeight() / 100;

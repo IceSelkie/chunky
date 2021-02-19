@@ -86,13 +86,11 @@ import java.util.zip.GZIPOutputStream;
  */
 public class Scene implements JsonSerializable, Refreshable {
 
-  private static final byte[] DUMP_FORMAT_MAGIC_NUMBER = {0x44, 0x55, 0x4D, 0x50};
-  private static final int DUMP_FORMAT_VERSION = 1;
   public static final int DEFAULT_DUMP_FREQUENCY = 500;
   public static final String EXTENSION = ".json";
 
   /** The current Scene Description Format (SDF) version. */
-  public static final int SDF_VERSION = 9;
+  public static final int SDF_VERSION = 10;
 
   protected static final double fSubSurface = 0.3;
 

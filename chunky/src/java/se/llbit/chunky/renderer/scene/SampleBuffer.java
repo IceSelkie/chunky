@@ -167,12 +167,18 @@ public class SampleBuffer {
   protected void addSpp(int x, int y, int sppIncrease) {
     spp[y][x] += sppIncrease;
   }
+  public void setSpp(int x, int y, int spp) {
+    this.spp[y][x] = spp;
+  }
 
   protected void addSpp(long index, int sppIncrease) {
     spp[(int) (index / rowSizeSpp)][(int) (index % rowSizeSpp)] += sppIncrease;
   }
+  public void setSpp(long index, int spp) {
+    this.spp[(int) (index / rowSizeSpp)][(int) (index % rowSizeSpp)] = spp;
+  }
 
-  public void setSampleWithSpp(int x, int y, int spp, double r, double g, double b) {
+  public void setPixelWithSpp(int x, int y, int spp, double r, double g, double b) {
     set(x, y, 0, r);
     set(x, y, 0, g);
     set(x, y, 0, b);
