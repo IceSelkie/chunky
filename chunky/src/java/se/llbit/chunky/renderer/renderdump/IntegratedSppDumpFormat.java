@@ -195,7 +195,7 @@ class IntegratedSppDumpFormat extends DumpFormat {
         bb.rewind();
         task.update(taskCoef * y);
       }
-      gis.finish();
+//      gis.finish();
     }
 
     //****SAMPLES****//
