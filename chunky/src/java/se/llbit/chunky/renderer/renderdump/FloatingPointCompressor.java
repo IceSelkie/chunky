@@ -241,4 +241,115 @@ public class FloatingPointCompressor {
       }
     }
   }
+
+  // not quite an output stream
+  public static class FloatingPointCompressorOutputter {
+    OutputStream out;
+    EncoderDecoder rEncoder = new EncoderDecoder();
+    EncoderDecoder gEncoder = new EncoderDecoder();
+    EncoderDecoder bEncoder = new EncoderDecoder();
+    double[] hold = new double[3];
+    boolean isHolding = false;
+
+    public FloatingPointCompressorOutputter(OutputStream out) {
+      this.out = out;
+    }
+    public void write(double r, double g, double b) throws IOException {
+      if (out == null)
+        throw new IllegalStateException("Stream Closed");
+      if (!isHolding) {
+        hold[0] = r;
+        hold[1] = g;
+        hold[2] = b;
+      } else {
+        rEncoder.encodePair(hold[0], r, out);
+        gEncoder.encodePair(hold[1], g, out);
+        bEncoder.encodePair(hold[2], b, out);
+      }
+      isHolding = !isHolding;
+    }
+    public void writeRow(SampleBuffer samples, int row, int x_start, int x_end) throws IOException {
+      for (int x = x_start; x<x_end; x++)
+        write(samples.get(x,row,0),samples.get(x,row,1),samples.get(x,row,2));
+    }
+    public void finish() throws IOException {
+      if (isHolding) {
+        rEncoder.encodeSingleWithOddTerminator(hold[0], out);
+        gEncoder.encodeSingleWithOddTerminator(hold[1], out);
+        bEncoder.encodeSingleWithOddTerminator(hold[2], out);
+      }
+      out.flush();
+      out = null;
+    }
+  }
+
+  public static class FloatingPointCompressorInputter {
+    InputStream in;
+    EncoderDecoder rDecoder = new EncoderDecoder();
+    EncoderDecoder gDecoder = new EncoderDecoder();
+    EncoderDecoder bDecoder = new EncoderDecoder();
+    double[] hold = new double[6];
+    int holding = 6;
+    public FloatingPointCompressorInputter(InputStream in) {
+      this.in = in;
+    }
+    public double read() throws IOException {
+      if (holding > 6) {
+        throw new IllegalStateException("In \"Read Last Pixel\" state! Use FloatingPointCompressorInputter.readLast() instead.");
+      } else if (holding < 6) {
+        return hold[holding++];
+      } else {
+        byte rGroupedHeader = (byte) in.read();
+        byte rFirstHeader = (byte) ((rGroupedHeader >>> 4) & 0x0F);
+        byte rSecondHeader = (byte) (rGroupedHeader & 0x0F);
+        hold[0] = rDecoder.decodeSingle(rFirstHeader, in);
+        hold[3] = rDecoder.decodeSingle(rSecondHeader, in);
+
+        byte gGroupedHeader = (byte) in.read();
+        byte gFirstHeader = (byte) ((gGroupedHeader >>> 4) & 0x0F);
+        byte gSecondHeader = (byte) (gGroupedHeader & 0x0F);
+        hold[1] = gDecoder.decodeSingle(gFirstHeader, in);
+        hold[4] = gDecoder.decodeSingle(gSecondHeader, in);
+
+        byte bGroupedHeader = (byte) in.read();
+        byte bFirstHeader = (byte) ((bGroupedHeader >>> 4) & 0x0F);
+        byte bSecondHeader = (byte) (bGroupedHeader & 0x0F);
+        hold[2] = bDecoder.decodeSingle(bFirstHeader, in);
+        hold[5] = bDecoder.decodeSingle(bSecondHeader, in);
+
+        holding = 1;
+        return hold[0];
+      }
+    }
+    public double readLast() throws IOException {
+      if (holding < 6)
+        return hold[holding++];
+      else if (holding >= 10 && holding < 13)
+        return hold[holding++ - 10];
+      else if (holding != 6) {
+        throw new IllegalStateException("Stream should be done.");
+      }
+
+      byte rGroupedHeader = (byte) in.read();
+      byte rFirstHeader = (byte) ((rGroupedHeader >>> 4) & 0x0F);
+      byte rSecondHeader = (byte) (rGroupedHeader & 0x0F);
+      hold[0] = rDecoder.decodeSingle(rFirstHeader, in);
+      rDecoder.decodeSingle(rSecondHeader, in); // discard
+
+      byte gGroupedHeader = (byte) in.read();
+      byte gFirstHeader = (byte) ((gGroupedHeader >>> 4) & 0x0F);
+      byte gSecondHeader = (byte) (gGroupedHeader & 0x0F);
+      hold[1] = gDecoder.decodeSingle(gFirstHeader, in);
+      gDecoder.decodeSingle(gSecondHeader, in); // discard
+
+      byte bGroupedHeader = (byte) in.read();
+      byte bFirstHeader = (byte) ((bGroupedHeader >>> 4) & 0x0F);
+      byte bSecondHeader = (byte) (bGroupedHeader & 0x0F);
+      hold[2] = bDecoder.decodeSingle(bFirstHeader, in);
+      bDecoder.decodeSingle(bSecondHeader, in); // discard
+
+      holding = 1;
+      return hold[0];
+    }
+  }
 }

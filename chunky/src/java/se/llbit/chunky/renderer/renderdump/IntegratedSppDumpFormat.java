@@ -16,8 +16,11 @@
  */
 package se.llbit.chunky.renderer.renderdump;
 
+import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
+import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import org.apache.commons.math3.exception.NoDataException;
 import org.apache.commons.math3.util.FastMath;
+import se.llbit.chunky.renderer.renderdump.FloatingPointCompressor.FloatingPointCompressorOutputter;
 import se.llbit.chunky.renderer.scene.SampleBuffer;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.math.IntBoundingBox;
@@ -26,7 +29,6 @@ import se.llbit.util.TaskTracker;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.StreamCorruptedException;
 import java.nio.ByteBuffer;
 import java.util.function.LongConsumer;
 import java.util.zip.GZIPInputStream;
@@ -47,6 +49,7 @@ class IntegratedSppDumpFormat extends DumpFormat {
   public static final DumpFormat INSTANCE = new IntegratedSppDumpFormat();
 
   // These must be 3 characters each. Just because.
+  public static final String SECTION_HEADER_SPP = "spp";
   public static final String SECTION_HEADER_SAMPLES = "sam";
   public static final String SECTION_HEADER_EOF = "dun";
 
@@ -87,31 +90,42 @@ class IntegratedSppDumpFormat extends DumpFormat {
         throw new NoDataException();
     }
 
-    //****SAMPLES****//
-    GZIPOutputStream gos = new GZIPOutputStream(outputStream);
-    gos.write(SECTION_HEADER_SAMPLES.getBytes());
+    //****SPP****//
+    outputStream.write(SECTION_HEADER_SPP.getBytes());
     int taskCoef = pixelRange.widthX();
-    try (TaskTracker.Task task = taskTracker.task("Saving render dump - Samples", taskCoef * pixelRange.widthZ())) {
-      // compile and write each row as tuples of <red, green, blue, spp> in a byte buffer.
-      // Have enough space for an entire row of pixels which have 3 doubles and an integer per pixel.
-      ByteBuffer bb = ByteBuffer.allocate(3*(pixelRange.xmax-pixelRange.xmin)*Double.BYTES+samples.rowSizeSpp*Integer.BYTES);
+    try (TaskTracker.Task task = taskTracker.task("Saving render dump - SPP", taskCoef * pixelRange.widthZ())) {
+      GZIPOutputStream gos = new GZIPOutputStream(outputStream);
+      // compile and write each row as a series of ints in a byte buffer.
+      // Have enough space for an entire row of SPP ints.
+      ByteBuffer bb = ByteBuffer.allocate(samples.rowSizeSpp*Integer.BYTES);
       for (int y = pixelRange.zmin; y < pixelRange.zmax; y++) {
-        for (int x = pixelRange.xmin; x < pixelRange.xmax; x++) {
-          bb.putDouble(samples.get(x, y, 0));
-          bb.putDouble(samples.get(x, y, 1));
-          bb.putDouble(samples.get(x, y, 2));
+        for (int x = pixelRange.xmin; x < pixelRange.xmax; x++)
           bb.putInt(samples.getSpp(x, y));
-        }
-        // Write the compiled row
+        // Write the compiled row in gzip form
         gos.write(bb.array());
         // Reset buffer so it can be reused.
         bb.rewind();
         task.update(taskCoef * (y - pixelRange.zmin));
       }
+      gos.finish();
     }
 
-    gos.write(SECTION_HEADER_EOF.getBytes());
-    gos.close();
+    //****SAMPLES****//
+    outputStream.write(SECTION_HEADER_SAMPLES.getBytes());
+    try (TaskTracker.Task task = taskTracker.task("Saving render dump - Samples", taskCoef * pixelRange.widthZ())) {
+      FloatingPointCompressorOutputter fpos = new FloatingPointCompressorOutputter(new FastBufferedOutputStream(outputStream));
+
+      // compile and write each row as tuples of <red, green, blue, spp> in a byte buffer.
+      // Have enough space for an entire row of pixels which have 3 doubles and an integer per pixel.
+      for (int y = pixelRange.zmin; y < pixelRange.zmax; y++) {
+        fpos.writeRow(samples, y, pixelRange.xmin, pixelRange.xmax);
+        task.update(taskCoef * (y - pixelRange.zmin));
+      }
+      fpos.finish();
+    }
+
+    outputStream.write(SECTION_HEADER_EOF.getBytes());
+    outputStream.close();
   }
 
   @Override
@@ -124,7 +138,7 @@ class IntegratedSppDumpFormat extends DumpFormat {
       int renderHeight = inputStream.readInt();
 
       if (renderWidth != scene.renderWidth() || renderHeight != scene.renderHeight()) {
-        throw new IllegalStateException("Scene size does not match dump size");
+        throw new IOException("Scene size does not match dump size");
       }
 
       cx = inputStream.readInt();
@@ -154,38 +168,62 @@ class IntegratedSppDumpFormat extends DumpFormat {
       // For future use; flags for gzip'd data / SPP interleaving or as an array?
       long flags = inputStream.readLong();
     }
-    GZIPInputStream gis = new GZIPInputStream(inputStream);
 
     byte[] strRead = new byte[3];
-    gis.read(strRead);
-    if (!(new String(strRead)).equals(SECTION_HEADER_SAMPLES))
-      throw new StreamCorruptedException("Expected Sample Marker, received \"" + new String(strRead) + "\" instead");
-
-    int g = width*(Double.BYTES*3+Integer.BYTES);
-    ByteBuffer bb = ByteBuffer.allocate(g);
-
     int taskCoef = scene.renderWidth();
-    try (TaskTracker.Task task = taskTracker.task("Loading render dump - Samples", taskCoef * scene.renderHeight())) {
+
+    //****SPP****//
+    inputStream.read(strRead);
+    if (!(new String(strRead)).equals(SECTION_HEADER_SPP))
+      throw new IOException("Expected SPP Marker, received \"" + new String(strRead) + "\" instead");
+    try (TaskTracker.Task task = taskTracker.task("Loading render dump - SPP", taskCoef * scene.renderHeight())) {
+      int g = width*(Integer.BYTES);
+      ByteBuffer bb = ByteBuffer.allocate(g);
+      GZIPInputStream gis = new GZIPInputStream(inputStream);
       for (int y = 0; y < height; y++) {
         // Read Bytes From File (in a loop cuz gzip is weird)
         for (int v=0; v<g; v += gis.read(bb.array(), v, g - v));
         // Move back to the beginning of buffer to process:
         bb.rewind();
+        // Read actual SPP
+        System.out.println("Reading spp row "+y);
         for (int x = 0; x < width; x++) {
-          samples.setPixel(x, y, bb.getDouble(), bb.getDouble(), bb.getDouble());
           samples.setSpp(x, y, bb.getInt());
+          System.out.println("("+x+","+y+") -> "+samples.getSpp(x,y));
         }
         // Row read; reset buffer & update progress bar.
         bb.rewind();
         task.update(taskCoef * y);
       }
+      gis.finish();
     }
 
-    gis.read(strRead);
-    if (!(new String(strRead)).equals(SECTION_HEADER_EOF))
-      throw new StreamCorruptedException("Expected Done Marker, received \""+new String(strRead)+"\" instead");
+    //****SAMPLES****//
 
-    gis.close();
+    inputStream.read(strRead);
+    if (!(new String(strRead)).equals(SECTION_HEADER_SAMPLES))
+      throw new IOException("Expected Sample Marker, received \"" + new String(strRead) + "\" instead");
+    try (TaskTracker.Task task = taskTracker.task("Loading render dump - Samples", taskCoef * scene.renderHeight())) {
+      FloatingPointCompressor.FloatingPointCompressorInputter fpis = new FloatingPointCompressor.FloatingPointCompressorInputter(new FastBufferedInputStream(inputStream));
+      for (int y = 0; y < height - 1; y++) {
+        for (int x = 0; x < width; x++)
+          samples.setPixel(x, y, fpis.read(), fpis.read(), fpis.read());
+        task.update(taskCoef * y);
+      }
+      // Last row, since we need to deal with the very last pixel specially.
+      for (int x = 0; x < width - 1; x++)
+        samples.setPixel(x, height - 1, fpis.read(), fpis.read(), fpis.read());
+      // Last pixel.
+      samples.setPixel(width - 1, height - 1, fpis.readLast(), fpis.readLast(), fpis.readLast());
+    }
+
+
+    //****DONE****//
+    inputStream.read(strRead);
+    if (!(new String(strRead)).equals(SECTION_HEADER_EOF))
+      throw new IOException("Expected Done Marker, received \""+new String(strRead)+"\" instead");
+
+    inputStream.close();
   }
 
   @Override
@@ -209,7 +247,7 @@ class IntegratedSppDumpFormat extends DumpFormat {
       int renderHeight = inputStream.readInt();
 
       if (scene.width != renderWidth || scene.height != renderHeight)
-        throw new Error("Failed to merge render dump - wrong canvas size.");
+        throw new IOException("Failed to merge render dump - wrong canvas size.");
 
       ox = inputStream.readInt();
       oy = inputStream.readInt();
@@ -260,7 +298,7 @@ class IntegratedSppDumpFormat extends DumpFormat {
       }
 
     if (!("" + inputStream.readChar() + inputStream.readChar() + inputStream.readChar()).equals(SECTION_HEADER_SAMPLES))
-      throw new StreamCorruptedException("Merging - Expected Sample Marker");
+      throw new IOException("Merging - Expected Sample Marker");
 
     ByteBuffer bb = ByteBuffer.allocate(ow*Double.BYTES*3+ow*Integer.BYTES);
     int taskCoef = ow;
@@ -278,7 +316,7 @@ class IntegratedSppDumpFormat extends DumpFormat {
     }
 
     if (!("" + inputStream.readChar() + inputStream.readChar() + inputStream.readChar()).equals(SECTION_HEADER_EOF))
-      throw new StreamCorruptedException("Merging - Expected Done Marker");
+      throw new IOException("Merging - Expected Done Marker");
   }
 
 
